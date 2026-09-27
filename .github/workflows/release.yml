@@ -226,26 +226,41 @@ jobs:
           body: |
             ## Simple DNSCrypt Plus ${{ needs.build.outputs.version }}
 
-            Portable builds of this fork of [SimpleDnsCrypt](https://github.com/DNSCrypt/SimpleDnsCrypt),
-            targeting .NET 10. Unzip anywhere and run `SimpleDnsCryptPlus.exe` as administrator.
+            Two channels, built by the same job from the same publish layout, of this fork of
+            [SimpleDnsCrypt](https://github.com/DNSCrypt/SimpleDnsCrypt), targeting .NET 10.
+
+            - **Portable zip** - self-contained, unzip anywhere, run `SimpleDnsCryptPlus.exe` as
+              administrator. This is the only artifact the in-app updater can apply.
+            - **MSI** - per-machine install: an entry in Apps & features, the `dnscrypt-proxy` service
+              stopped and removed on uninstall, per-interface DNS restored, and `msiexec /i ... /qn`
+              for managed deployment.
+
+            Pick one per machine. Both manage the same service and the same `dnscrypt-proxy.toml`, and
+            a portable copy next to an installed one will fight over both.
+
+            <!-- REMOVE THIS PARAGRAPH ONCE A PERSON HAS ACTUALLY INSTALLED AND UNINSTALLED THE MSI.
+            The installer's tables are audited on every build by build/inspect-msi.ps1 - identity,
+            per-machine scope, the service-control row, the licence page, the embedded cabinet - which
+            is a statement about the package, not about behaviour on a machine. Until the sentence
+            above is deleted, the portable zip is the recommended channel. -->
 
             ### Verify before running
-            Each zip is accompanied by a detached minisign signature. The key that verifies it is not
-            inside the zip - it is `tools/keys/update.pub` in this repository - so fetch it from the
-            tag you downloaded from, then verify. Needs the minisign CLI:
+            Every archive and every installer is accompanied by a detached minisign signature. The key
+            that verifies them is not inside the download - it is `tools/keys/update.pub` in this
+            repository - so fetch it from the tag you downloaded from, then verify. Needs the minisign
+            CLI:
 
             ```
             Invoke-WebRequest `
               "https://raw.githubusercontent.com/${{ github.repository }}/refs/tags/${{ github.ref_name }}/tools/keys/update.pub" `
               -OutFile update.pub
-            minisign -Vm .\SimpleDNSCryptPlus-x64-${{ needs.build.outputs.version }}-portable.zip `
-              -x .\SimpleDNSCryptPlus-x64-${{ needs.build.outputs.version }}-portable.zip.minisig `
-              -p .\update.pub
+            $payload = 'SimpleDNSCryptPlus-x64-${{ needs.build.outputs.version }}-portable.zip'   # or the .msi
+            minisign -Vm ".\$payload" -x ".\$payload.minisig" -p .\update.pub
             ```
 
             Or check the digest against `SHA256SUMS.txt`:
             ```
-            Get-FileHash .\SimpleDNSCryptPlus-x64-${{ needs.build.outputs.version }}-portable.zip -Algorithm SHA256
+            Get-FileHash ".\$payload" -Algorithm SHA256
             ```
 
             The in-app updater accepts only artifacts that this key signs.
