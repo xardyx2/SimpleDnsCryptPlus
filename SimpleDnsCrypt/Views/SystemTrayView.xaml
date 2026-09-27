@@ -15,7 +15,7 @@
     Visibility="Hidden"
     lex:LocalizeDictionary.DesignCulture="en"
     lex:LocalizeDictionary.OutputMissingKeys="False"
-    lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCrypt"
+    lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCryptPlus"
     lex:ResxLocalizationProvider.DefaultDictionary="Translation">
     <UserControl.Resources>
         <ContextMenu x:Shared="false" x:Key="MainSysTrayMenu">

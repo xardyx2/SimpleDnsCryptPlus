@@ -8,7 +8,7 @@
              xmlns:converters="clr-namespace:SimpleDnsCrypt.Converters"
              xmlns:helper="clr-namespace:SimpleDnsCrypt.Helper"
              lex:LocalizeDictionary.DesignCulture="en"
-             lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCrypt"
+             lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCryptPlus"
              lex:ResxLocalizationProvider.DefaultDictionary="Translation"
              mc:Ignorable="d" Height="200">
     <UserControl.Resources>

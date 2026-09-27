@@ -9,7 +9,7 @@
              mc:Ignorable="d"
              Height="Auto" MinWidth="340"
              lex:LocalizeDictionary.DesignCulture="en"
-             lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCrypt"
+             lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCryptPlus"
              lex:ResxLocalizationProvider.DefaultDictionary="Translation">
     <UserControl.Resources>
         <ResourceDictionary>

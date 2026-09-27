@@ -22,7 +22,7 @@ namespace SimpleDnsCrypt.Helper
         /// <returns>Translated string.</returns>
         public static string GetUiString(string key, CultureInfo culture)
         {
-            return (string)LocalizeDictionary.Instance.GetLocalizedObject("simplednscrypt", "Translation", key, culture);
+            return (string)LocalizeDictionary.Instance.GetLocalizedObject("simplednscryptplus", "Translation", key, culture);
         }
 
         /// <summary>

@@ -10,7 +10,7 @@
              mc:Ignorable="d"
              Height="Auto" Width="400"
              lex:LocalizeDictionary.DesignCulture="en"
-             lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCrypt"
+             lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCryptPlus"
              lex:ResxLocalizationProvider.DefaultDictionary="Translation"
              d:DataContext="{d:DesignInstance Type=viewModels:AddCustomResolverViewModel}">
     <Grid Background="#198AB328">

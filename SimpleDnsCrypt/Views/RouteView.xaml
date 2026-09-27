@@ -11,7 +11,7 @@
              mc:Ignorable="d"
              Height="Auto" Width="650"
              lex:LocalizeDictionary.DesignCulture="en"
-             lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCrypt"
+             lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCryptPlus"
              lex:ResxLocalizationProvider.DefaultDictionary="Translation">
     <Grid Background="#198AB328">
         <Border BorderThickness="1" Grid.Row="0" Grid.Column="0" Background="#198AB328" Margin="10" Padding="10">
