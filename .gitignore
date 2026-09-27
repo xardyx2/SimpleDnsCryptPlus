@@ -293,3 +293,8 @@ Installer/SimpleDnsCrypt.wxs
 
 # MSBuild binary logs (local build diagnostics, not source)
 *.binlog
+
+# dnscrypt-proxy binaries are fetched by build/fetch-proxy.ps1 against the pinned
+# digests in tools/dnscrypt-proxy.lock.json - they are deliberately not committed.
+SimpleDnsCrypt/dnscrypt-proxy/dnscrypt-proxy64.exe
+SimpleDnsCrypt/dnscrypt-proxy/dnscrypt-proxy86.exe

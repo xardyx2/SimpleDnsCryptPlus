@@ -38,10 +38,10 @@
     <EmbeddedResource Include="Resources\Licenses\Caliburn.Micro.txt" />
     <EmbeddedResource Include="Resources\Licenses\SimpleDNSCrypt.txt" />
     <EmbeddedResource Include="Resources\Licenses\dnscrypt-proxy.txt" />
-    <Content Include="dnscrypt-proxy\dnscrypt-proxy64.exe">
+    <Content Include="dnscrypt-proxy\dnscrypt-proxy64.exe" Condition="Exists('dnscrypt-proxy\dnscrypt-proxy64.exe')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dnscrypt-proxy\dnscrypt-proxy86.exe">
+    <Content Include="dnscrypt-proxy\dnscrypt-proxy86.exe" Condition="Exists('dnscrypt-proxy\dnscrypt-proxy86.exe')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="Resources\Licenses\gong-wpf-dragdrop.txt" />
@@ -87,4 +87,25 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
+
+  <!--
+    The dnscrypt-proxy executables are no longer committed; they are downloaded against the
+    pinned SHA-256 digests in tools/dnscrypt-proxy.lock.json. This keeps a fresh clone building
+    without a manual setup step. Pass -p:SkipDnscryptProxyDownload=true for an offline or
+    source-only build, in which case the Content items above simply stay empty.
+  -->
+  <Target Name="EnsureDnscryptProxyBinaries" BeforeTargets="BeforeBuild"
+          Condition="'$(SkipDnscryptProxyDownload)' != 'true'">
+    <PropertyGroup>
+      <_Proxy64>$(MSBuildProjectDirectory)\dnscrypt-proxy\dnscrypt-proxy64.exe</_Proxy64>
+      <_Proxy86>$(MSBuildProjectDirectory)\dnscrypt-proxy\dnscrypt-proxy86.exe</_Proxy86>
+    </PropertyGroup>
+    <Message Importance="high"
+             Text="Fetching dnscrypt-proxy binaries (digest-pinned via tools/dnscrypt-proxy.lock.json)..."
+             Condition="!Exists('$(_Proxy64)') Or !Exists('$(_Proxy86)')" />
+    <Exec Condition="!Exists('$(_Proxy64)') Or !Exists('$(_Proxy86)')"
+          Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\build\fetch-proxy.ps1&quot;"
+          StandardOutputImportance="high"
+          IgnoreExitCode="false" />
+  </Target>
 </Project>
