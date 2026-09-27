@@ -22,10 +22,16 @@ namespace SimpleDnsCrypt.ViewModels
     public class QueryLogViewModel : Screen
     {
         private static readonly ILog Log = LogManagerHelper.Factory();
+
+        /// <summary>
+        /// Upper bound for the on-screen query log. The file on disk is the source of truth;
+        /// this view is a viewer, not a store. Unbounded growth here is upstream issue #19.
+        /// </summary>
+        private const int MaxQueryLogEntries = 1000;
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _events;
 
-        private ObservableCollection<QueryLogLine> _queryLogLines;
+        private BoundedObservableCollection<QueryLogLine> _queryLogLines;
         private string _queryLogFile;
         private bool _isQueryLogLogging;
         private QueryLogLine _selectedQueryLogLine;
@@ -37,7 +43,7 @@ namespace SimpleDnsCrypt.ViewModels
             _events = events;
             _events.SubscribeOnPublishedThread(this);
             _isQueryLogLogging = false;
-            _queryLogLines = new ObservableCollection<QueryLogLine>();
+            _queryLogLines = new BoundedObservableCollection<QueryLogLine>(MaxQueryLogEntries);
 
             if (!string.IsNullOrEmpty(Properties.Settings.Default.QueryLogFile))
             {
@@ -98,7 +104,7 @@ namespace SimpleDnsCrypt.ViewModels
             Execute.OnUIThread(() => { QueryLogLines.Clear(); });
         }
 
-        public ObservableCollection<QueryLogLine> QueryLogLines
+        public BoundedObservableCollection<QueryLogLine> QueryLogLines
         {
             get => _queryLogLines;
             set

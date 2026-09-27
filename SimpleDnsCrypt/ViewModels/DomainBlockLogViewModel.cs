@@ -21,7 +21,12 @@ namespace SimpleDnsCrypt.ViewModels
     {
         private static readonly ILog Log = LogManagerHelper.Factory();
 
-        private ObservableCollection<DomainBlockLogLine> _domainBlockLogLines;
+        /// <summary>
+        /// Upper bound for the on-screen block log; the file on disk is the source of truth.
+        /// </summary>
+        private const int MaxDomainBlockLogEntries = 1000;
+
+        private BoundedObservableCollection<DomainBlockLogLine> _domainBlockLogLines;
         private string _domainBlockLogFile;
         private bool _isDomainBlockLogLogging;
         private DomainBlockLogLine _selectedDomainBlockLogLine;
@@ -30,7 +35,7 @@ namespace SimpleDnsCrypt.ViewModels
         public DomainBlockLogViewModel()
         {
             _isDomainBlockLogLogging = false;
-            _domainBlockLogLines = new ObservableCollection<DomainBlockLogLine>();
+            _domainBlockLogLines = new BoundedObservableCollection<DomainBlockLogLine>(MaxDomainBlockLogEntries);
         }
 
         private void AddLogLine(DomainBlockLogLine domainBlockLogLine)
@@ -46,7 +51,7 @@ namespace SimpleDnsCrypt.ViewModels
             Execute.OnUIThread(() => { DomainBlockLogLines.Clear(); });
         }
 
-        public ObservableCollection<DomainBlockLogLine> DomainBlockLogLines
+        public BoundedObservableCollection<DomainBlockLogLine> DomainBlockLogLines
         {
             get => _domainBlockLogLines;
             set
