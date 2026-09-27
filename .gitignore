@@ -301,3 +301,6 @@ SimpleDnsCrypt/dnscrypt-proxy/dnscrypt-proxy86.exe
 
 # Digest-pinned build toolchains unpacked by build/fetch-*.ps1 (WiX today).
 .tools/
+
+# Scratch space for build-time tooling (workflow lint temp files).
+.work/
