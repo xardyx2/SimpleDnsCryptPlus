@@ -91,12 +91,24 @@ jobs:
           pwsh -NoProfile -ExecutionPolicy Bypass -File build/build-portable.ps1
           -Arch ${{ matrix.arch }} -Version ${{ steps.version.outputs.version }}
 
+      - name: Build MSI
+        run: >-
+          pwsh -NoProfile -ExecutionPolicy Bypass -File build/build-msi.ps1
+          -Arch ${{ matrix.arch }} -Version ${{ steps.version.outputs.version }}
+
+      - name: Audit the MSI tables
+        run: >-
+          pwsh -NoProfile -ExecutionPolicy Bypass -File build/inspect-msi.ps1
+          -Path artifacts/SimpleDNSCryptPlus-${{ matrix.arch }}-${{ steps.version.outputs.version }}.msi
+          -Strict
+
       - name: Upload artifact
         uses: actions/upload-artifact@v7.0.1
         with:
           name: release-${{ matrix.arch }}
           path: |
             artifacts/*.zip
+            artifacts/*.msi
             artifacts/SHA256SUMS-*.txt
           if-no-files-found: error
           retention-days: 30
@@ -151,14 +163,21 @@ jobs:
           if (-not $env:MINISIGN_PRIVATE_KEY -or -not $env:MINISIGN_PASSWORD) {
             throw 'MINISIGN_PRIVATE_KEY / MINISIGN_PASSWORD are not set for this repository. An unsigned release is not a release: the application would refuse every artifact we publish.'
           }
+          # Both payload kinds must be present and both get signed: an MSI riding along unsigned is
+          # exactly the half-release this step exists to prevent.
           $zips = @(Get-ChildItem -LiteralPath staged -Filter *.zip)
+          $msis = @(Get-ChildItem -LiteralPath staged -Filter *.msi)
           if ($zips.Count -lt 2) {
-            throw "expected at least an x64 and an x86 artifact, found $($zips.Count)"
+            throw "expected at least an x64 and an x86 zip, found $($zips.Count)"
           }
-          foreach ($zip in $zips) {
-            dotnet run --project tools/minisign-tool -c Release -- sign --file $zip.FullName --signature-out "$($zip.FullName).minisig"
-            if ($LASTEXITCODE -ne 0) { throw "signing failed for $($zip.Name)" }
+          if ($msis.Count -lt 2) {
+            throw "expected at least an x64 and an x86 MSI, found $($msis.Count)"
           }
+          foreach ($artifact in @($zips) + @($msis)) {
+            dotnet run --project tools/minisign-tool -c Release -- sign --file $artifact.FullName --signature-out "$($artifact.FullName).minisig"
+            if ($LASTEXITCODE -ne 0) { throw "signing failed for $($artifact.Name)" }
+          }
+          Write-Host "signed $(@($zips).Count + @($msis).Count) artifacts"
 
       - name: Verify the signatures with the reference minisign CLI
         shell: bash
@@ -167,21 +186,23 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends minisign
           dpkg -s minisign | grep -E '^(Package|Version):'
-          for zip in staged/*.zip; do
-            echo "verifying $zip against the committed public key"
-            minisign -Vm "$zip" -x "$zip.minisig" -p tools/keys/update.pub
+          for artifact in staged/*.zip staged/*.msi; do
+            echo "verifying $artifact against the committed public key"
+            minisign -Vm "$artifact" -x "$artifact.minisig" -p tools/keys/update.pub
           done
 
-          # The check above is only worth something if it can fail. Same name, one extra byte.
+          # The check above is only worth something if it can fail. Same name, one extra byte - tried
+          # on one artifact of each kind, because the two are produced by different tools.
           work=$(mktemp -d)
-          target=$(ls -1 staged/*.zip | head -1)
-          cp "$target" "$work/$(basename "$target")"
-          printf 'tamper' >> "$work/$(basename "$target")"
-          if minisign -Vm "$work/$(basename "$target")" -x "$target.minisig" -p tools/keys/update.pub; then
-            echo "the CLI accepted a modified artifact - do not publish"
-            exit 1
-          fi
-          echo "tampered copy rejected, as it must be"
+          for target in "$(ls -1 staged/*.zip | head -1)" "$(ls -1 staged/*.msi | head -1)"; do
+            cp "$target" "$work/$(basename "$target")"
+            printf 'tamper' >> "$work/$(basename "$target")"
+            if minisign -Vm "$work/$(basename "$target")" -x "$target.minisig" -p tools/keys/update.pub; then
+              echo "the CLI accepted a modified artifact - do not publish"
+              exit 1
+            fi
+            echo "tampered copy of $(basename "$target") rejected, as it must be"
+          done
 
       - name: Write the update manifests the application reads
         shell: pwsh

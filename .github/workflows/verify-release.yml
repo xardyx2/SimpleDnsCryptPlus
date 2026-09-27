@@ -1,0 +1,112 @@
+name: Verify published release
+
+# Everything else in this repository proves what a build is going to contain. This proves what a
+# release actually contains, after it is published: that every asset's digest is in SHA256SUMS.txt,
+# that every payload carries a signature the reference minisign CLI accepts from the key users are
+# told about, and that the check is real because a tampered copy fails.
+#
+# It is dispatchable rather than scheduled because the thing worth verifying is a publication: run it
+# after release.yml, and any time a user reports that verification failed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to verify, for example v0.9.0-rc.1'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: "1"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+
+jobs:
+  verify:
+    name: assets of ${{ inputs.tag }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Install the reference minisign CLI
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends minisign jq
+          dpkg -s minisign | grep -E '^(Package|Version):'
+
+      - name: Download every asset of the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p published
+          gh release download "${{ inputs.tag }}" --repo "$GITHUB_REPOSITORY" --dir published --clobber
+          ls -la published
+          test -f published/SHA256SUMS.txt
+
+      - name: Every asset is covered by SHA256SUMS.txt, and every line matches
+        run: |
+          set -euo pipefail
+          cd published
+          sha256sum --check --strict SHA256SUMS.txt
+
+          # The other direction matters more: an asset nobody listed is an asset nobody verified.
+          for payload in *.zip *.msi; do
+            [ -e "$payload" ] || continue
+            if ! awk '{ print $2 }' SHA256SUMS.txt | grep -qxF "$payload"; then
+              echo "$payload is published but absent from SHA256SUMS.txt"
+              exit 1
+            fi
+          done
+
+      - name: Every payload is signed by the release key
+        run: |
+          set -euo pipefail
+          count=0
+          for payload in published/*.zip published/*.msi; do
+            [ -e "$payload" ] || continue
+            echo "verifying $(basename "$payload")"
+            minisign -Vm "$payload" -x "$payload.minisig" -p tools/keys/update.pub
+            count=$((count + 1))
+          done
+          echo "verified $count signed payloads"
+          test "$count" -ge 4
+
+      - name: A modified asset must be rejected
+        run: |
+          set -euo pipefail
+          work=$(mktemp -d)
+          for payload in "$(ls -1 published/*.zip | head -1)" "$(ls -1 published/*.msi | head -1)"; do
+            cp "$payload" "$work/$(basename "$payload")"
+            printf 'tamper' >> "$work/$(basename "$payload")"
+            if minisign -Vm "$work/$(basename "$payload")" -x "$payload.minisig" -p tools/keys/update.pub; then
+              echo "the CLI accepted a modified $(basename "$payload") - the signature check is not a check"
+              exit 1
+            fi
+            echo "tampered copy of $(basename "$payload") rejected, as it must be"
+          done
+
+      - name: The update channel still points only at signed zips
+        run: |
+          set -euo pipefail
+          for arch in x64 x86; do
+            manifest="published/update-$arch.json"
+            [ -e "$manifest" ] || { echo "no $manifest - the app would report no update available"; exit 1; }
+            uri=$(jq -r '.downloadUri' "$manifest")
+            format=$(jq -r '.format' "$manifest")
+            sha=$(jq -r '.sha256' "$manifest")
+            name=$(basename "$uri")
+            echo "$arch -> $format $name"
+            [ "$format" = 'zip' ] || { echo "$manifest advertises format '$format'; the updater unpacks a zip"; exit 1; }
+            case "$name" in
+              *.zip) ;;
+              *) echo "$manifest downloads $name, not a zip"; exit 1 ;;
+            esac
+            listed=$(awk -v f="$name" '$2 == f { print $1 }' published/SHA256SUMS.txt)
+            [ "$listed" = "$sha" ] || { echo "$manifest sha256 $sha is not what SHA256SUMS.txt says ($listed)"; exit 1; }
+          done

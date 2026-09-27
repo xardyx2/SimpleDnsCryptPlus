@@ -10,6 +10,23 @@ their respective repositories for authoritative histories.
 
 ## [Unreleased]
 
+### Added
+- **A per-machine MSI per architecture**, built from the same publish layout as the portable zip so
+  the two channels cannot contain different code. It registers in Apps & features, stops and removes
+  the `dnscrypt-proxy` service on uninstall, restores per-interface DNS by running `Uninstall.exe` as
+  a deferred custom action, and supports `msiexec /i … /qn`. See
+  `docs/adr/0003-msi-as-a-second-channel-with-wix-v3.md`; the portable zip remains the only thing the
+  in-app updater downloads, because the updater cannot apply an MSI.
+- `build/build-msi.ps1`, `build/fetch-wix.ps1`, `build/inspect-msi.ps1` and `tools/wix.lock.json`.
+  The WiX toolset is now a digest-pinned build dependency the same way `dnscrypt-proxy` already is,
+  and every build audits the finished package's own tables (identity, `ALLUSERS`, the service-control
+  row, the licence page, the embedded cabinet, the file count) rather than trusting the linker.
+- `Tests/InstallerIdentityTests.cs`, which refuses a package carrying instant.sc's `UpgradeCode` or
+  `AllowDowngrades="yes"`, and proves itself able to fail against a canary copy of their project.
+- `.github/workflows/verify-release.yml`, which re-downloads a published release and asserts that
+  every asset is checksummed, that every payload verifies against the committed public key, that a
+  tampered copy is rejected, and that the update manifests still point only at signed zips.
+
 ### Fixed
 - The README still described the pre-candidate state of the fork: its dnscrypt-proxy badge read
   2.1.5 while `tools/dnscrypt-proxy.lock.json` pins 2.1.18, its release badge resolved to

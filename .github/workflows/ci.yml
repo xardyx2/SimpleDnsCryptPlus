@@ -84,10 +84,24 @@ jobs:
           pwsh -NoProfile -ExecutionPolicy Bypass -File build/build-portable.ps1
           -Arch ${{ matrix.arch }} -Version 0.0.0
 
+      # The MSI is built from the publish layout the step above leaves behind, so the zip and the
+      # installer cannot drift apart. It is built on every push, not only on tags: the toolset is
+      # fetched and pinned at build time, and a breakage there must show up as a red push rather than
+      # as a failed release.
+      - name: Build MSI
+        run: >-
+          pwsh -NoProfile -ExecutionPolicy Bypass -File build/build-msi.ps1
+          -Arch ${{ matrix.arch }} -Version 0.0.0
+
+      - name: Audit the MSI tables
+        run: >-
+          pwsh -NoProfile -ExecutionPolicy Bypass -File build/inspect-msi.ps1
+          -Path artifacts/SimpleDNSCryptPlus-${{ matrix.arch }}-0.0.0.msi -Strict
+
       - name: Report artifact sizes
         shell: pwsh
         run: |
-          Get-ChildItem artifacts/*.zip | ForEach-Object {
+          Get-ChildItem artifacts/*.zip, artifacts/*.msi | ForEach-Object {
             Write-Host ("{0} = {1:N1} MB" -f $_.Name, ($_.Length / 1MB))
           }
           Get-Content artifacts/SHA256SUMS-*.txt
@@ -98,6 +112,7 @@ jobs:
           name: portable-${{ matrix.arch }}
           path: |
             artifacts/*.zip
+            artifacts/*.msi
             artifacts/SHA256SUMS-*.txt
           if-no-files-found: error
           retention-days: 14

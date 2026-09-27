@@ -25,7 +25,7 @@ A simple management tool to configure [dnscrypt-proxy](https://github.com/DNSCry
 | Target framework | .NET Framework 4.8 | .NET 8 | .NET 10 (`net10.0-windows10.0.19041`) |
 | CI actually running | none in repo (AppVeyor lived on the author's personal account) | workflow committed, **never executed once** | GitHub Actions — `ci.yml` on every push, `release.yml` gated on a tag |
 | Bundled dnscrypt-proxy | 2.1.15 | 2.1.5 | **2.1.18**, fetched at build time with pinned SHA-256 |
-| Installer | MSI, source **not in repo** | MSI via WiX v3, unsigned | portable zip + minisign (MSI deferred) |
+| Installer | MSI, source **not in repo** | MSI via WiX v3, unsigned | portable zip + minisign, plus a per-machine MSI (unsigned) |
 
 Both predecessors did real work and are credited in [NOTICE.md](NOTICE.md) and
 [CHANGELOG.md](CHANGELOG.md). This fork merges upstream's `master` together with all 58 commits
@@ -56,10 +56,19 @@ reimplementation nor upstream's resolver-list migration.
 - **Translations are frozen.** The old POEditor project is owned by upstream's author.
   `Resources/Translation.*.resx` in this repository is now the source of truth, and new strings
   ship English-only. See [translations/README.md](translations/README.md).
-- **Portable zip only, for now.** The MSI project is kept in-tree but built by no workflow; it
-  uses WiX v3, which cannot be built by `dotnet build` and whose successor (v4+) is a rewrite.
-  If you used an MSI from any earlier project, uninstall it first — a portable copy and an
-  MSI copy of this app manage the *same* Windows service and will conflict.
+- **Two install channels, one Windows service.** Releases ship a portable zip *and* a per-machine
+  MSI, built from the same publish layout. The zip stays the only thing the in-app updater will
+  download, because the updater has no way to apply an MSI; the MSI exists for an Apps & features
+  entry, automatic service removal on uninstall, and `msiexec /qn` fleet installs. Pick one — a
+  portable copy and an MSI copy of this app manage the *same* `dnscrypt-proxy` service and the same
+  `dnscrypt-proxy.toml`, and will conflict. Windows Installer cannot represent a prerelease suffix in
+  `ProductVersion`, so candidate MSIs of the same core version do not upgrade each other. The MSI is
+  built with WiX v3.14 because v4+ binary releases require accepting a revenue-based maintenance-fee
+  EULA; see [docs/adr/0003-msi-as-a-second-channel-with-wix-v3.md](docs/adr/0003-msi-as-a-second-channel-with-wix-v3.md).
+- **No human has installed the MSI yet.** Its tables are audited on every build
+  (`build/inspect-msi.ps1`, identity, `ALLUSERS`, the service-cleanup row, the licence page), but the
+  install, upgrade and uninstall paths have not been walked in a VM. Until they have, the zip is the
+  recommended channel.
 - **This app requires administrator rights** and will show a UAC prompt on every launch.
 
 ## Download
@@ -69,6 +78,11 @@ Portable, self-contained (no .NET installation needed):
 - `SimpleDNSCryptPlus-x64-<version>-portable.zip`
 - `SimpleDNSCryptPlus-x86-<version>-portable.zip`
 
+Per-machine installer, registered in Apps & features and removable with `msiexec /x`:
+
+- `SimpleDNSCryptPlus-x64-<version>.msi`
+- `SimpleDNSCryptPlus-x86-<version>.msi`
+
 `<version>` carries the prerelease suffix while the project is pre-`1.0.0`; the current build is
 `SimpleDNSCryptPlus-x64-0.9.0-rc.1-portable.zip`.
 
@@ -76,9 +90,9 @@ Grab them from [Releases](https://github.com/xardyx2/SimpleDnsCryptPlus/releases
 `/releases/latest` is empty until a stable release exists, and that is deliberate: a candidate must
 never reach an installed copy as an automatic update offer.
 
-Each release carries `SHA256SUMS.txt` and one `.zip.minisig` per archive. The public key is **not**
-inside the zip — it is published in this repository, so fetch it from the tag you downloaded from,
-then verify. This needs the [minisign](https://github.com/jedisct1/minisign) CLI:
+Each release carries `SHA256SUMS.txt` and one `.minisig` per archive or installer. The public key is
+**not** inside the download — it is published in this repository, so fetch it from the tag you
+downloaded from, then verify. This needs the [minisign](https://github.com/jedisct1/minisign) CLI:
 
 ```powershell
 $tag = 'v0.9.0-rc.1'
@@ -86,9 +100,9 @@ Invoke-WebRequest `
   "https://raw.githubusercontent.com/xardyx2/SimpleDnsCryptPlus/refs/tags/$tag/tools/keys/update.pub" `
   -OutFile update.pub
 
-$zip = 'SimpleDNSCryptPlus-x64-0.9.0-rc.1-portable.zip'
-Get-FileHash ".\$zip" -Algorithm SHA256
-minisign -Vm ".\$zip" -x ".\$zip.minisig" -p .\update.pub
+$payload = 'SimpleDNSCryptPlus-x64-0.9.0-rc.1-portable.zip'   # or the .msi of the same arch
+Get-FileHash ".\$payload" -Algorithm SHA256
+minisign -Vm ".\$payload" -x ".\$payload.minisig" -p .\update.pub
 ```
 
 `Get-FileHash` prints uppercase; the release's `SHA256SUMS.txt` is lowercase. The two are equal
