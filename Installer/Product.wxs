@@ -1,54 +1,121 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  Simple DNSCrypt Plus per-machine MSI.
+
+  Rewritten from scratch against the WiX v3 schema. The only thing carried over from instant.sc's
+  Installer/Product.wxs is the uninstall shape: stop and remove the dnscrypt-proxy service, and run
+  Uninstall.exe so per-interface DNS settings get restored. Their UpgradeCode is NOT carried over -
+  an MSI claiming b561df39-7e27-44e4-978d-22df6eea11b4 would silently replace, or be replaced by,
+  an install this project does not control (see docs/adr/0002-portable-only-no-msi.md). Their
+  <MajorUpgrade AllowDowngrades="yes"/> is dropped for the same reason: a downgrade is a way to hand
+  someone an older, possibly vulnerable proxy over the one they are running.
+
+  Identity is deliberately distinct from every predecessor: product name, manufacturer, install
+  directory (SimpleDNSCryptPlus, not SimpleDNSCrypt) and HKCU anchor. Version, platform, source
+  directory, license and icon all arrive as preprocessor variables from build/build-msi.ps1, so this
+  file holds no build-specific constant that can drift out of date - except the identifiers below,
+  which are pinned by tools/mint-upgradecode.py and must never change across releases.
+-->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="SimpleDNSCrypt.insc" Language="1033" Version="0.8.2" Manufacturer="instant.sc"
-           UpgradeCode="b561df39-7e27-44e4-978d-22df6eea11b4">
-    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Platform="x64" />
+  <Product Id="*" Name="Simple DNSCrypt Plus" Language="1033"
+           Manufacturer="Esperion"
+           Version="$(var.Version)"
+           UpgradeCode="83b82951-1902-5be6-aedf-fbcf2dafc56f">
+
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine"
+             Platform="$(var.Platform)"
+             Description="Simple DNSCrypt Plus $(var.Version) ($(var.Platform))"
+             Comments="Windows Installer package" />
+
     <MediaTemplate EmbedCab="yes" />
-    <Feature Id="ProductFeature" Title="SimpleDNSCrypt" Level="1" ConfigurableDirectory="INSTALLFOLDER">
-      <ComponentGroupRef Id="SimpleDNSCrypt_Project" />
-      <ComponentRef Id="Registry" />
+
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/xardyx2/SimpleDnsCryptPlus" />
+    <Property Id="ARPURLUPDATEABOUT" Value="https://github.com/xardyx2/SimpleDnsCryptPlus/releases" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
+    <Icon Id="AppIcon" SourceFile="$(var.IconPath)" />
+
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.LicenseRtf)" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Simple DNSCrypt Plus is already installed." />
+
+    <Feature Id="ProductFeature" Title="Simple DNSCrypt Plus" Level="1"
+             ConfigurableDirectory="INSTALLFOLDER">
+      <ComponentGroupRef Id="SdcPlusPayload" />
+      <ComponentRef Id="UninstallHelper" />
       <ComponentRef Id="ApplicationShortcut" />
-      <ComponentRef Id="ServiceConfig" />
+      <ComponentRef Id="ServiceCleanup" />
     </Feature>
+
     <UIRef Id="WixUI_InstallDir" />
     <UIRef Id="WixUI_ErrorProgressText" />
-    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
-    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
-    <MajorUpgrade AllowDowngrades="yes" />
-    <CustomAction Id='UninstallHelper' FileKey='fil642D7E8813ED6B2EB95FB4C9D8255F7C' ExeCommand='' Execute="deferred" Impersonate="no" Return="check" />
+
+    <!--
+      Uninstall.exe resets the static DNS server entries on every interface the app manages
+      (Uninstall/Program.cs). Deferred and non-impersonated because it calls netsh and needs the
+      elevated system context a per-machine install already has. Skipped during an upgrade, where
+      the incoming version rewrites the settings immediately afterwards anyway.
+    -->
+    <CustomAction Id="UninstallHelper" FileKey="uninstallHelperExe" ExeCommand=""
+                  Execute="deferred" Impersonate="no" Return="check" />
+
     <InstallExecuteSequence>
       <DeleteServices>NOT UPGRADINGPRODUCTCODE</DeleteServices>
-      <Custom Action="UninstallHelper" After="InstallInitialize">NOT UPGRADINGPRODUCTCODE and REMOVE="ALL"</Custom>
+      <Custom Action="UninstallHelper" After="InstallInitialize">NOT UPGRADINGPRODUCTCODE AND REMOVE="ALL"</Custom>
     </InstallExecuteSequence>
   </Product>
 
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Component Id="ServiceConfig" Guid="e2b3771e-5b8e-4e07-9f46-6133d09ee20b">
-        <ServiceControl Id="DnscryptServiceStopRemove" Name="dnscrypt-proxy" Remove="uninstall"/>
-      </Component>
-      <Directory Id="ProgramFiles64Folder">
-        <Directory Id="INSTALLFOLDER" Name="SimpleDNSCrypt" />
-      </Directory>
-      <Directory Id="ProgramMenuFolder">
-        <Directory Id="ApplicationProgramsFolder" Name="SimpleDNSCrypt">
-          <Component Id="ApplicationShortcut" Guid="32c0c96b-a096-44fa-b8cb-f5ca84f881dd">
-            <Shortcut Id="ApplicationStartMenuShortcut" 
-                  Name="SimpleDNSCrypt"
-                  Description="SimpleDNSCrypt"
-                  Target="[#fil12E9E5B12E65A378DD9B7308CCDA334E]"
-                  WorkingDirectory="INSTALLFOLDER"/>
-            <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
-            <RegistryValue Root="HKCU" Key="Software\instantsc\SimpleDNSCrypt" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+
+      <!-- $(var.ProgramFilesFolder) is ProgramFiles64Folder or ProgramFilesFolder per arch. -->
+      <Directory Id="$(var.ProgramFilesFolder)">
+        <Directory Id="INSTALLFOLDER" Name="SimpleDNSCryptPlus">
+
+          <!-- label: msi/component/uninstall-helper -->
+          <Component Id="UninstallHelper" Guid="b86408de-5c2f-524e-8bce-584f16884c26">
+            <!-- $(var.UninstallExe) is the file in the publish layout, not in the harvested staging
+                 copy: build-msi.ps1 removes it there so heat cannot install it a second time. -->
+            <File Id="uninstallHelperExe" Source="$(var.UninstallExe)" KeyPath="yes" />
           </Component>
+
         </Directory>
       </Directory>
-      <Component Id="Registry" Guid="161bb76a-8604-425b-8bd7-eeafb47c8cca">
-        <!--<RegistryKey Root="HKLM" Key="Software\instantsc\SimpleDNSCrypt">
-          <RegistryValue Type="string" Name="InstallDir" Value="[INSTALLFOLDER]" />
-        </RegistryKey>-->
+
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="Simple DNSCrypt Plus">
+
+          <!-- label: msi/component/start-menu-shortcut -->
+          <Component Id="ApplicationShortcut" Guid="9db757ab-8377-50c9-b2c8-0c70c2c723e8">
+            <Shortcut Id="StartMenuShortcut" Name="Simple DNSCrypt Plus"
+                      Description="Configure and monitor dnscrypt-proxy"
+                      Target="[INSTALLFOLDER]SimpleDnsCryptPlus.exe"
+                      WorkingDirectory="INSTALLFOLDER" />
+            <RemoveFolder Id="RemoveStartMenuFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
+            <RegistryValue Root="HKCU" Key="Software\Esperion\SimpleDnsCryptPlus"
+                           Name="installed" Type="integer" Value="1" KeyPath="yes" />
+          </Component>
+
+        </Directory>
+      </Directory>
+
+      <!--
+        A control-only component: it stops and removes the dnscrypt-proxy service that the app
+        registered itself, because Windows Installer cannot clean up a service it did not create.
+        ServiceControl has no KeyPath attribute in WiX v3, so the component is keyed on an HKLM
+        value rather than CreateFolder - keying on the install directory would make it a candidate
+        for removal, and that directory is where the user's dnscrypt-proxy.toml lives.
+      -->
+      <!-- label: msi/component/service-cleanup -->
+      <Component Id="ServiceCleanup" Guid="ea19a35a-4745-57a7-a518-bec3da71a5e2">
+        <RegistryValue Root="HKLM" Key="Software\Esperion\SimpleDnsCryptPlus"
+                       Name="serviceCleanup" Type="integer" Value="1" KeyPath="yes" />
+        <ServiceControl Id="RemoveDnscryptProxy" Name="dnscrypt-proxy"
+                        Stop="both" Remove="uninstall" Wait="yes" />
       </Component>
+
     </Directory>
   </Fragment>
 </Wix>

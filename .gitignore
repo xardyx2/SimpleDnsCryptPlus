@@ -298,3 +298,6 @@ Installer/SimpleDnsCrypt.wxs
 # digests in tools/dnscrypt-proxy.lock.json - they are deliberately not committed.
 SimpleDnsCrypt/dnscrypt-proxy/dnscrypt-proxy64.exe
 SimpleDnsCrypt/dnscrypt-proxy/dnscrypt-proxy86.exe
+
+# Digest-pinned build toolchains unpacked by build/fetch-*.ps1 (WiX today).
+.tools/
