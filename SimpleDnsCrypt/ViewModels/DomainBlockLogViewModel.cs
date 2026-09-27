@@ -191,22 +191,11 @@ namespace SimpleDnsCrypt.ViewModels
                                 while (_isDomainBlockLogLogging)
                                 {
                                     await Task.Delay(500);
-                                    //if the file size has not changed, idle
-                                    if (reader.BaseStream.Length == lastMaxOffset)
-                                        continue;
 
-                                    //seek to the last max offset
-                                    reader.BaseStream.Seek(lastMaxOffset, SeekOrigin.Begin);
-
-                                    //read out of the file until the EOF
-                                    while (reader.ReadLine() is { } line)
+                                    foreach (var line in LogTailReader.ReadNewLines(reader, ref lastMaxOffset))
                                     {
-                                        var blockLogLine = new DomainBlockLogLine(line);
-                                        AddLogLine(blockLogLine);
+                                        AddLogLine(new DomainBlockLogLine(line));
                                     }
-
-                                    //update the last max offset
-                                    lastMaxOffset = reader.BaseStream.Position;
                                 }
                             }
                         }).ConfigureAwait(false);
