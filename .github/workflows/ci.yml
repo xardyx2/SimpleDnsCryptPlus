@@ -228,3 +228,19 @@ jobs:
           }
 
           Write-Host 'manifest shape and signature framing match what the application expects'
+  # A broken workflow YAML or shell typo is a pipeline failure, not a build failure, and it shows up
+  # only when something needs to be released. This checks all three files on every push instead, in
+  # seconds and on the free Linux runner.
+  workflows-lint:
+    name: workflow syntax
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Install PyYAML
+        run: python3 -m pip install --quiet pyyaml
+
+      - name: Parse every workflow and syntax-check its shell blocks
+        run: python3 build/lint-workflows.py
