@@ -287,3 +287,6 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 Installer/SimpleDnsCrypt.wxs
+
+# release/publish output produced by build/fetch-proxy.ps1 and dotnet publish
+/artifacts/

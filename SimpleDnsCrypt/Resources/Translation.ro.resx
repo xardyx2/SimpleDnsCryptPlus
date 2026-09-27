@@ -538,7 +538,7 @@
     <value>Minimize to tray when closing</value>
   </data>
   <data name="settings_start_in_tray" xml:space="preserve">
-    <value>Start Simple DNSCrypt in tray</value>
+    <value>Start Simple DNSCrypt Plus in tray</value>
   </data>
   <data name="settings_update_silent" xml:space="preserve">
     <value>Silently install new versions</value>

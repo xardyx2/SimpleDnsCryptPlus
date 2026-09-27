@@ -9,7 +9,7 @@ namespace SimpleDnsCrypt.Config
         /// <summary>
         ///     The name of this application.
         /// </summary>
-        public const string ApplicationName = "Simple DNSCrypt";
+        public const string ApplicationName = "Simple DNSCrypt Plus";
 
         /// <summary>
         ///		Output folder for logs.

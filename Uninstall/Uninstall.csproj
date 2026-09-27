@@ -2,12 +2,13 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8-windows10.0.19041</TargetFramework>
-    <AssemblyTitle>Uninstall helper for Simple DNSCrypt</AssemblyTitle>
-    <Product>Uninstall helper for Simple DNSCrypt</Product>
-    <Description>Uninstall helper for Simple DNSCrypt</Description>
-    <Copyright>Copyright © 2015 - 2020 Christian Hermann, 2021 - 2023 instant.sc</Copyright>
-    <AssemblyVersion>0.8.2</AssemblyVersion>
-    <FileVersion>0.8.2</FileVersion>
+    <AssemblyTitle>Uninstall helper for Simple DNSCrypt Plus</AssemblyTitle>
+    <Product>Simple DNSCrypt Plus</Product>
+    <Description>Uninstall helper for Simple DNSCrypt Plus</Description>
+    <Copyright>Copyright © 2015 - 2020 Christian Hermann, 2021 - 2023 instant.sc, 2026 Esperion</Copyright>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
     <ApplicationIcon>simplednscrypt.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>

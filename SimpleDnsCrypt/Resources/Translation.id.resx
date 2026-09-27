@@ -505,7 +505,7 @@
     <value>Merupakan resolver DNS normal tanpa enkripsi yang hanya akan digunakan untuk kueri saat mengambil daftar resolver awal, jika konfigurasi DNS sistem tidak bekerja. Penduduk di Cina mungkin perlu menggunakan 114.114.114.114:53.</value>
   </data>
   <data name="trayicon_tooltip" xml:space="preserve">
-    <value>Simple DNSCrypt</value>
+    <value>Simple DNSCrypt Plus</value>
   </data>
   <data name="trayicon_exit" xml:space="preserve">
     <value>Keluar</value>
@@ -535,7 +535,7 @@
     <value>Kecilkan ke penampan saat ditutup</value>
   </data>
   <data name="settings_start_in_tray" xml:space="preserve">
-    <value>Jalankan Simple DNSCrypt di penampan</value>
+    <value>Jalankan Simple DNSCrypt Plus di penampan</value>
   </data>
   <data name="settings_update_silent" xml:space="preserve">
     <value>Pasang versi mutakhir secara senyap</value>

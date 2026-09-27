@@ -510,7 +510,7 @@ Fuzzy</comment>
     <value>通常の非暗号化DNSリゾルバです。システムのDNS設定にてうまくいかない場合に、最初にリゾルバリストを取得する1回のみに使用します。中国国内で必要な場合、114.114.114.114:53を試して下さい</value>
   </data>
   <data name="trayicon_tooltip" xml:space="preserve">
-    <value>Simple DNSCrypt</value>
+    <value>Simple DNSCrypt Plus</value>
   </data>
   <data name="trayicon_exit" xml:space="preserve">
     <value>終了</value>

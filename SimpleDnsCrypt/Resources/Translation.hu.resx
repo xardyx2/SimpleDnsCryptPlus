@@ -536,7 +536,7 @@
     <value>Bezáráskor minimalizálja a tálcára</value>
   </data>
   <data name="settings_start_in_tray" xml:space="preserve">
-    <value>Simple DNSCrypt indítása a tálcán</value>
+    <value>Simple DNSCrypt Plus indítása a tálcán</value>
   </data>
   <data name="settings_update_silent" xml:space="preserve">
     <value>Csendben telepítse az új verziókat</value>

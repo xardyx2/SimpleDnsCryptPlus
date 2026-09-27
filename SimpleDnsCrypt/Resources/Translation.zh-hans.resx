@@ -509,7 +509,7 @@
 如果你在中国大陆使用的话，这里填 114.114.114.114:53</value>
   </data>
   <data name="trayicon_tooltip" xml:space="preserve">
-    <value>Simple DNSCrypt</value>
+    <value>Simple DNSCrypt Plus</value>
   </data>
   <data name="trayicon_exit" xml:space="preserve">
     <value>退出</value>

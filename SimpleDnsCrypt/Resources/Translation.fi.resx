@@ -506,7 +506,7 @@
     <value>This is a normal, non-encrypted DNS resolver, that will be only used for one-shot queries when retrieving the initial resolvers list, and only if the system DNS configuration doesn&apos;t work. People in China may need to use 114.114.114.114:53 here.</value>
   </data>
   <data name="trayicon_tooltip" xml:space="preserve">
-    <value>Simple DNSCrypt</value>
+    <value>Simple DNSCrypt Plus</value>
   </data>
   <data name="trayicon_exit" xml:space="preserve">
     <value>Exit</value>
@@ -536,7 +536,7 @@
     <value>Minimize to tray when closing</value>
   </data>
   <data name="settings_start_in_tray" xml:space="preserve">
-    <value>Start Simple DNSCrypt in tray</value>
+    <value>Start Simple DNSCrypt Plus in tray</value>
   </data>
   <data name="settings_update_silent" xml:space="preserve">
     <value>Silently install new versions</value>

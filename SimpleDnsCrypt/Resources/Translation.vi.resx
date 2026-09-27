@@ -505,7 +505,7 @@
     <value>Đây là máy phân giải DNS thông thường, không được mã hóa, sẽ chỉ được sử dụng cho các truy vấn một lần khi truy xuất danh sách các công cụ giải quyết đầu tiên, và chỉ khi cấu hình DNS hệ thống không hoạt động. Người ở Trung Quốc có thể cần sử dụng 114.114.114.114:53 tại đây.</value>
   </data>
   <data name="trayicon_tooltip" xml:space="preserve">
-    <value>Simple DNSCrypt</value>
+    <value>Simple DNSCrypt Plus</value>
   </data>
   <data name="trayicon_exit" xml:space="preserve">
     <value>Thoát</value>
@@ -535,7 +535,7 @@
     <value>Ẩn vào khay khi đóng</value>
   </data>
   <data name="settings_start_in_tray" xml:space="preserve">
-    <value>Bắt đầu Simple DNSCrypt ẩn</value>
+    <value>Bắt đầu Simple DNSCrypt Plus ẩn</value>
   </data>
   <data name="settings_update_silent" xml:space="preserve">
     <value>Cập nhật ngầm phiên bản mới</value>

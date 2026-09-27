@@ -74,6 +74,9 @@ namespace SimpleDnsCrypt
                 Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 
                 // prevent multiple instances
+                // Name kept as "SimpleDnsCrypt" on purpose: renaming it would let a legacy
+                // SimpleDnsCrypt.exe and this build run at once, and both would write the same
+                // dnscrypt-proxy.toml and fight over the single dnscrypt-proxy service.
                 const string appName = "SimpleDnsCrypt";
                 _mutex = new Mutex(true, appName, out var createdNew);
 

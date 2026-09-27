@@ -518,7 +518,7 @@
     <value>Un résolveur DNS normal, non chiffré, qui sera utilisé seulement pour des requêtes ponctuelles lors de la récupération de la liste initiale de résolveurs, et seulement si la configuration DNS du système ne fonctionne pas. Les résidents en Chine doivent peut-être utiliser 114.114.114.114:53 ici.</value>
   </data>
   <data name="trayicon_tooltip" xml:space="preserve">
-    <value>Simple DNSCrypt</value>
+    <value>Simple DNSCrypt Plus</value>
   </data>
   <data name="trayicon_exit" xml:space="preserve">
     <value>Quitter</value>
@@ -548,7 +548,7 @@
     <value>Réduire dans la barre de tâche lors de la fermeture</value>
   </data>
   <data name="settings_start_in_tray" xml:space="preserve">
-    <value>Démarrer Simple DNSCrypt dans la barre de tâche</value>
+    <value>Démarrer Simple DNSCrypt Plus dans la barre de tâche</value>
   </data>
   <data name="settings_update_silent" xml:space="preserve">
     <value>Installer silencieusement les nouvelles versions</value>

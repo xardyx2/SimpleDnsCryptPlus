@@ -1,104 +1,109 @@
-[![license](https://img.shields.io/github/license/instantsc/SimpleDnsCrypt.svg?style=flat-square)](https://github.com/instantsc/SimpleDnsCrypt/blob/master/LICENSE.md) 
-[![Github All Releases](https://img.shields.io/github/release/instantsc/SimpleDnsCrypt.svg?style=flat-square&include_prereleases)](https://github.com/instantsc/SimpleDnsCrypt/releases/latest) 
-[![dnscrypt--proxy](https://img.shields.io/badge/dnscrypt--proxy-2.1.5-orange.svg?style=flat-square)](https://github.com/jedisct1/dnscrypt-proxy) 
-[![Github All Releases](https://img.shields.io/github/downloads/instantsc/SimpleDnsCrypt/total.svg?style=flat-square)](https://github.com/instantsc/SimpleDnsCrypt/releases/latest) 
+[![license](https://img.shields.io/github/license/esperion-agency/SimpleDnsCryptPlus.svg?style=flat-square)](LICENSE.md)
+[![release](https://img.shields.io/github/v/release/esperion-agency/SimpleDnsCryptPlus.svg?style=flat-square)](https://github.com/esperion-agency/SimpleDnsCryptPlus/releases/latest)
+[![dnscrypt-proxy](https://img.shields.io/badge/dnscrypt--proxy-2.1.5-orange.svg?style=flat-square)](https://github.com/DNSCrypt/dnscrypt-proxy)
 
+# Simple DNSCrypt Plus
 
-# ![Simple DNSCrypt Logo](img/logo_with_text.png)
+![Simple DNSCrypt Logo](img/logo_with_text.png)
 
-# Fork
-This was forked from [here](https://github.com/bitbeans/SimpleDnsCrypt) due to inactivity. I was able to fix a few things that were bugging me and see no reason not to share.
+A simple management tool to configure [dnscrypt-proxy](https://github.com/DNSCrypt/dnscrypt-proxy) on Windows.
 
-Note that this repository has **no** connection to OpenCollective or any other form of funding.
+> **This is an independent, unofficial fork.** It is not affiliated with, endorsed by, or
+> maintained by [Christian Hermann (bitbeans)](https://github.com/bitbeans),
+> [instant.sc](https://github.com/instantsc), or the
+> [DNSCrypt organization](https://github.com/DNSCrypt). The upstream
+> [SimpleDnsCrypt](https://github.com/DNSCrypt/SimpleDnsCrypt) has not shipped a release since
+> 0.7.1 (2020-04-11); this fork exists because that project is unmaintained and its users still
+> need current binaries. Nothing here should be read as an official edition or successor.
 
-This is not a drop-in replacement in a sense that you will have to migrate your settings yourself, although the files themselves (if you copy them) should be fairly compatible.
+## Why this fork
 
-# Simple DNSCrypt
-Simple DNSCrypt is a simple management tool to configure [dnscrypt-proxy](https://github.com/jedisct1/dnscrypt-proxy) on windows based systems. 
+| | [upstream](https://github.com/DNSCrypt/SimpleDnsCrypt) | [instantsc](https://github.com/instantsc/SimpleDnsCrypt) | this fork (today → target) |
+|---|---|---|---|
+| Last release | 0.7.1 — Apr 2020 | 0.8.2 — Nov 2023 | none yet → `1.0.0` |
+| Target framework | .NET Framework 4.8 | .NET 8 | .NET 8 → **.NET 10** |
+| CI actually running | none in repo (AppVeyor lived on the author's personal account) | workflow committed, **never executed once** | none yet → GitHub Actions, release-gating |
+| Bundled dnscrypt-proxy | 2.1.15 | 2.1.5 | 2.1.5 → **2.1.18**, fetched at build time with pinned SHA-256 |
+| Installer | MSI, source **not in repo** | MSI via WiX v3, unsigned | portable zip + minisign (MSI deferred) |
 
-## Status
+Both predecessors did real work and are credited in [NOTICE.md](NOTICE.md) and
+[CHANGELOG.md](CHANGELOG.md). This fork merges upstream's `master` together with all 58 commits
+from `instantsc`, so it loses neither the WiX installer source and `SimpleDnsCrypt.Utils`
+reimplementation nor upstream's resolver-list migration.
 
-Uses dnscrypt-proxy: **2.1.5**
+## Honest limitations — read before you rely on this
 
+- **Artifacts are unsigned.** There is no Authenticode certificate. SmartScreen will warn, and
+  some antivirus products report false positives for this class of app — it writes per-interface
+  DNS settings under `HKLM` and ships a Go binary. See [docs/AV-FALSE-POSITIVES.md](docs).
+  Verifying the published SHA-256 and minisign signature is the intended check instead.
+- **Existing installations cannot be upgraded remotely, ever.** Upstream 0.7.x polls
+  `raw.githubusercontent.com/bitbeans/.../update.yml` and validates against *Christian Hermann's*
+  minisign public key, which this fork does not and never will hold. 0.8.x builds have no
+  updater at all. If you have an old copy, uninstall it and install a zip from here.
+- **Settings do not migrate across the rename.** In .NET, user settings storage is tied to the
+  binary identity. Because the executable is now `SimpleDnsCryptPlus.exe`, window position and
+  similar preferences start fresh. Your `dnscrypt-proxy.toml` and rule files are unaffected —
+  they live next to the executable and keep their original names.
+- **Translations are frozen.** The old POEditor project is owned by upstream's author.
+  `Resources/Translation.*.resx` in this repository is now the source of truth, and new strings
+  ship English-only. See [translations/README.md](translations).
+- **Portable zip only, for now.** The MSI project is kept in-tree but built by no workflow; it
+  uses WiX v3, which cannot be built by `dotnet build` and whose successor (v4+) is a rewrite.
+  If you used an MSI from any earlier project, uninstall it first — a portable copy and an
+  MSI copy of this app manage the *same* Windows service and will conflict.
+- **This app requires administrator rights** and will show a UAC prompt on every launch.
 
-## Getting Started
+## Download
 
+Portable, self-contained (no .NET installation needed):
 
-### Prerequisites
+- `SimpleDNSCryptPlus-<version>-x64-portable.zip`
+- `SimpleDNSCryptPlus-<version>-x86-portable.zip`
 
-Windows 10 LTSC 21H2 is tested(-ish) to work, other users are welcome to test and report other Windows versions.
+Grab them from [Releases](https://github.com/esperion-agency/SimpleDnsCryptPlus/releases/latest).
+Each release carries `SHA256SUMS.txt` and a `.zip.minisig`. Verify with:
 
-### Installing
+```powershell
+Get-FileHash .\SimpleDNSCryptPlus-1.0.0-x64-portable.zip -Algorithm SHA256
+minisign -Vm .\SimpleDNSCryptPlus-1.0.0-x64-portable.zip -p keys\update.pub
+```
 
-To install Simple DNSCrypt use the [MSI package](https://github.com/instantsc/SimpleDnsCrypt/releases/latest).
+Unzip anywhere you like, run `SimpleDnsCryptPlus.exe` as administrator. To remove the service,
+run `Uninstall.exe` from the same folder (or uninstall the service from inside the app).
 
-### Deinstallation
+## Building from source
 
-To uninstall Simple DNSCrypt and dnscrypt-proxy, just go to the Windows Control Panel (Programs and Features) and search for Simple DNSCrypt.
+Requires the .NET 10 SDK (pinned by `global.json`) on Windows:
 
-### Updates
+```powershell
+dotnet restore SimpleDnsCrypt.sln
+dotnet build   SimpleDnsCrypt.sln -c Release
+dotnet test    Tests/Tests.csproj -c Release
+```
 
-For now, the only update option is to download and install the newest version manually. Note that in .NET the setting storage is tied to the binary location, and so you'll either have to migrate manually or to install update to the same location as before.
+The `dnscrypt-proxy` binaries are **not** committed. A release build downloads them from
+upstream and fails closed unless the digests match `tools/dnscrypt-proxy.lock.json`. For offline
+or source-only builds, set `-p:SkipDnscryptProxyDownload=true`.
 
-## Screenshots
-
-![maintab](img/preview/mainmenu.png)
-
-![maintab](img/preview/custom_resolver.png)
-
-<details>
-<summary>More</summary>
-
-![resolvers](img/preview/resolvers.png)
-
-![advanced](img/preview/advancedsettings.png)
-
-![blacklist](img/preview/blacklist.png)
-
-![blocklog](img/preview/blocklog.png)
-
-![settings](img/preview/settings.png)
-</details>
-
-
-## Built With
-
-* [Visual Studio 2022](https://www.visualstudio.com/downloads/)
-* [.NET 7](https://dotnet.microsoft.com/download/dotnet)
-* [WiX](https://wixtoolset.org/)
+Before testing changes that touch live DNS, read [docs/testing/dns-safety.md](docs). The app
+installs a Windows service and rewrites per-interface DNS; testing it naively can leave your own
+machine unable to resolve any name — which also blocks you from looking up the fix.
 
 ## Authors
 
-* **Christian Hermann** - [bitbeans](https://github.com/bitbeans)
-* [**instant.sc**](https://github.com/instantsc)
+* **Christian Hermann** — [bitbeans](https://github.com/bitbeans) — original author, 0.1–0.7.1 (2015–2020)
+* **instant.sc** — [instantsc](https://github.com/instantsc) — .NET 8 migration, 0.7.2.3–0.8.2 (2021–2023)
+* **Ardy S.** — [xardyx2](https://github.com/xardyx2) — this fork (2026–)
 
-See also the list of [Contributors.md](Contributors.md) who participated in this project. 
-If you are a translator, feel free to update this file.
+See also [Contributors.md](Contributors.md), including the translators whose work is carried
+forward here.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+MIT — see [LICENSE.md](LICENSE.md) and [NOTICE.md](NOTICE.md).
 
-## Used Software and Libraries
+## Thanks
 
-- [Caliburn.Micro](https://github.com/Caliburn-Micro/Caliburn.Micro)
-- [DnsCrypt.Toolbox](https://github.com/bitbeans/DnsCrypt.Toolbox)
-- [gong-wpf-dragdrop](https://github.com/punker76/gong-wpf-dragdrop)
-- [MahApps.Metro](https://github.com/MahApps/MahApps.Metro)
-- [MahApps.Metro.SimpleChildWindow](https://github.com/punker76/MahApps.Metro.SimpleChildWindow)
-- [Nett](https://github.com/paiden/Nett)
-- [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json)
-- [NLog](https://github.com/nlog/NLog)
-- [notifyicon-wpf](https://bitbucket.org/hardcodet/notifyicon-wpf/src)
-- [WPFLocalizationExtension](https://github.com/SeriousM/WPFLocalizationExtension)
-- [YamlDotNet](https://github.com/aaubry/YamlDotNet)
-
-
-## Thanks to
-
-* Frank Denis for the development of [dnscrypt-proxy](https://github.com/jedisct1/dnscrypt-proxy)
-* all users, translators and contributors
-
-### Contributors
-
-This project exists thanks to all the people who contribute. [[Contributors](Contributors.md)].
+* Frank Denis ([jedisct1](https://github.com/jedisct1)) for dnscrypt-proxy itself.
+* Both previous maintainers, for building and then keeping alive the tool this fork continues.

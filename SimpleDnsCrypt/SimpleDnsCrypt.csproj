@@ -2,12 +2,16 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8-windows10.0.19041</TargetFramework>
-    <AssemblyTitle>Simple DnsCrypt</AssemblyTitle>
-    <Product>Simple DnsCrypt</Product>
+    <AssemblyTitle>Simple DNSCrypt Plus</AssemblyTitle>
+    <Product>Simple DNSCrypt Plus</Product>
+    <AssemblyName>SimpleDnsCryptPlus</AssemblyName>
+    <RootNamespace>SimpleDnsCrypt</RootNamespace>
+    <Company>Esperion</Company>
     <Description>Simple management tool for dnscrypt-proxy</Description>
-    <Copyright>Copyright © 2015 - 2020 Christian Hermann, 2021 - 2023 instant.sc</Copyright>
-    <AssemblyVersion>0.8.2</AssemblyVersion>
-    <FileVersion>0.8.2</FileVersion>
+    <Copyright>Copyright © 2015 - 2020 Christian Hermann, 2021 - 2023 instant.sc, 2026 Esperion</Copyright>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Images\simplednscrypt.ico</ApplicationIcon>
