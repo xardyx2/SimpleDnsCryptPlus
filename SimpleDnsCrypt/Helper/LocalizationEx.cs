@@ -63,6 +63,9 @@ namespace SimpleDnsCrypt.Helper
                 new Language {Name = "Slovenian", ShortCode = "sl", CultureCode = "sl-SI"},
                 new Language {Name = "Spanish", ShortCode = "es", CultureCode = "es-ES"},
                 new Language {Name = "Swedish", ShortCode = "sv", CultureCode = "sv-SV"},
+                // "tl", not "tgl": .NET normalises CultureInfo("tgl").Name to "tl", so a satellite
+                // built from Translation.tgl.resx is never found and every lookup returns null.
+                new Language {Name = "Tagalog", ShortCode = "tl", CultureCode = "tl-PH"},
                 new Language {Name = "Thai", ShortCode = "th", CultureCode = "th-TH"},
                 new Language {Name = "Turkish", ShortCode = "tr", CultureCode = "tr-TR"},
                 new Language {Name = "Ukrainian", ShortCode = "uk", CultureCode = "uk-UA"},
