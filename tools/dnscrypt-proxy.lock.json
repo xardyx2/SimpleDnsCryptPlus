@@ -1,0 +1,20 @@
+{
+  "_comment": "Pinned source of the dnscrypt-proxy binaries shipped in the portable zip. These are no longer committed to git. build/fetch-proxy.ps1 fails closed if a download does not match sha256. See docs/proxy-supply-chain.md for how to verify the upstream minisign signature by hand before updating this file.",
+  "version": "2.1.18",
+  "repository": "DNSCrypt/dnscrypt-proxy",
+  "releaseUrl": "https://github.com/DNSCrypt/dnscrypt-proxy/releases/tag/2.1.18",
+  "artifacts": {
+    "x64": {
+      "asset": "dnscrypt-proxy-win64-2.1.18.zip",
+      "sha256": "15f0c8f1f40620a54ddfd8752c327dabe1146f84618d68874f79c4f52490b396",
+      "memberPath": "win64/dnscrypt-proxy.exe",
+      "destinationName": "dnscrypt-proxy64.exe"
+    },
+    "x86": {
+      "asset": "dnscrypt-proxy-win32-2.1.18.zip",
+      "sha256": "60d320f90b31ad976078208802e0d4137555db9bc72126341b4f2014c068e42a",
+      "memberPath": "win32/dnscrypt-proxy.exe",
+      "destinationName": "dnscrypt-proxy86.exe"
+    }
+  }
+}

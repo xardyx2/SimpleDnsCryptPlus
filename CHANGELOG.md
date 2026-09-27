@@ -42,15 +42,50 @@ and every configuration/rule/log filename (`dnscrypt-proxy.toml`, `query.log`, `
 existing user configuration or let two managers of the same service run at once. C# namespaces and
 project folder names likewise stay put.
 
+### Changed
+- Target framework moved to `net10.0-windows10.0.19041` across all four projects. The platform
+  version is load-bearing: plain `net10.0-windows` makes NuGet silently fall back to
+  ReactiveUI.WPF 19.5.1's .NET Framework 4.8 assets.
+- Dependency updates: MahApps.Metro 2.4.10→2.4.11, ReactiveProperty 9.3.4→9.9.0,
+  NLog 5.2.5→6.2.1, YamlDotNet 13.7.1→18.1.0, Hardcodet.NotifyIcon.Wpf 1.1.0→2.0.1,
+  gong-wpf-dragdrop 3.2.1→4.0.0, Caliburn.Micro 4.0.212→5.0.258.
+  `ReactiveUI.WPF` deliberately stays at 19.5.1 — see `docs/adr/0001-stay-on-reactiveui-19.md`.
+- The `dnscrypt-proxy` executables are no longer committed. They are downloaded by
+  `build/fetch-proxy.ps1` and verified against SHA-256 digests pinned in
+  `tools/dnscrypt-proxy.lock.json`, failing closed on mismatch. Bundled version goes 2.1.5 → 2.1.18.
+- `build/build-portable.ps1` assembles the shipped zip and enforces an artifact size budget
+  (measured: x64 93.3 MB, x86 88.1 MB).
+
+### Fixed
+- Query, domain-block and address-block log views grew without bound for the life of the process,
+  behind upstream issue #19 (4 GB working set). Now capped at 1000 entries each, enforced at the
+  type level so reverting it is a compile error.
+- The log tail readers stalled permanently after dnscrypt-proxy rotated a log file — upstream
+  issue #287, "broken until restart". The seek landed past EOF and the stale offset was re-recorded
+  every 500 ms forever.
+- The configuration migration overwrote a user's custom resolver `sources` list unconditionally;
+  it now only replaces the untouched v2 default pair. This also removes a latent
+  `IndexOutOfRangeException` on a single-URL source list.
+- Tagalog was an unusable translation: `Translation.tgl.resx` produced a satellite that could never
+  be found, because `CultureInfo("tgl").Name` normalises to `tl`. Renamed to
+  `Translation.tl.resx` and now offered in the language dropdown.
+
+### Added
+- GitHub Actions `ci.yml` and `release.yml`. The test step asserts a non-zero test count, so a
+  silently-skipped test project cannot produce a green build.
+- `Uninstall.exe` ships in the portable zip. It was previously harvested by the MSI, and it is what
+  restores each interface to DHCP-supplied DNS.
+- Tests: 5 → 41. New guards cover Caliburn view resolution, translation coverage per culture, and
+  consistency between `<AssemblyName>` and the 13 WPFLocalizeExtension references that depend on it.
+- `docs/adr/0001-stay-on-reactiveui-19.md`, `docs/adr/0002-portable-only-no-msi.md`,
+  `docs/proxy-supply-chain.md`.
+
 ### Planned before `1.0.0`
-- Target framework `net10.0-windows` across all four projects.
-- Dependency majors (ReactiveUI, gong-wpf-dragdrop, Hardcodet.NotifyIcon.Wpf, NLog, YamlDotNet).
-- Bound the unbounded log collections behind upstream issue #19 (4 GB working set) and #287
-  (query log dead until restart).
-- Narrow `PatchHelper`'s config migration so it stops overwriting a user's custom `sources` list.
-- GitHub Actions CI producing signed-by-minisign portable zips for x64 and x86, with the
-  `dnscrypt-proxy` binaries fetched at build time against pinned SHA-256 digests.
-- An in-app update channel authenticated by this project's own minisign key.
+- An in-app update channel authenticated by this project's own minisign key, with release
+  artefacts signed.
+- Translation key-drift check in CI, and a check that `<AssemblyName>` and the localisation
+  references stay in sync.
+- Backlog triage with written reproductions.
 
 ## [0.8.2] - 2023-11-17 — instant.sc
 - Updated to .NET 8. Updated dependencies and dnscrypt-proxy to 2.1.5. Markup fixes and cleaner
