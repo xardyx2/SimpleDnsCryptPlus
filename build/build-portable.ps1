@@ -41,14 +41,22 @@ $publishDir = Join-Path $OutDir "portable-$Arch"
 $zipName = "SimpleDNSCryptPlus-$Arch-$Version-portable.zip"
 $zipPath = Join-Path $OutDir $zipName
 
+# AssemblyVersion and FileVersion take only major[.minor[.build[.revision]]], so handing the whole
+# tag to them breaks the compile with CS7034 the first time anyone tags a prerelease. Only the
+# informational version may carry the suffix - and only the zip name and update manifest need it.
+if ($Version -notmatch '^(\d+\.\d+\.\d+)') {
+  throw "version '$Version' does not start with a numeric major.minor.patch, so no assembly version can be derived from it"
+}
+$numericVersion = $Matches[1]
+
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 
 Write-Host "publish $rid self-contained (single-file is deliberately not used)"
 dotnet publish (Join-Path $repoRoot 'SimpleDnsCrypt') `
   -c Release -r $rid --self-contained true `
   -p:Version=$Version `
-  -p:AssemblyVersion=$Version `
-  -p:FileVersion=$Version `
+  -p:AssemblyVersion=$numericVersion `
+  -p:FileVersion=$numericVersion `
   -o $publishDir
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed for $rid" }
 
@@ -60,6 +68,8 @@ Write-Host "publish Uninstall helper for $rid"
 dotnet publish (Join-Path $repoRoot 'Uninstall') `
   -c Release -r $rid --self-contained true `
   -p:Version=$Version `
+  -p:AssemblyVersion=$numericVersion `
+  -p:FileVersion=$numericVersion `
   -o $publishDir
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish of the Uninstall helper failed for $rid" }
 
