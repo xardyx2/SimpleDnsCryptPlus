@@ -166,7 +166,7 @@ jobs:
           set -euo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends minisign
-          minisign --version
+          dpkg -s minisign | grep -E '^(Package|Version):'
           for zip in staged/*.zip; do
             echo "verifying $zip against the committed public key"
             minisign -Vm "$zip" -x "$zip.minisig" -p tools/keys/update.pub
