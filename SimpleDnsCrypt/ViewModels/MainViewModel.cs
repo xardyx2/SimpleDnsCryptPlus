@@ -24,6 +24,7 @@ using System.Windows.Threading;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using ReactiveUI;
+using SimpleDnsCrypt.Utils;
 using SimpleDnsCrypt.Utils.Models;
 using ReactiveCommand = ReactiveUI.ReactiveCommand;
 using TabControl = System.Windows.Controls.TabControl;
@@ -587,6 +588,102 @@ namespace SimpleDnsCrypt.ViewModels
                 }
                 CloakAndForwardViewModel.IsForwardingEnabled = true;
             }
+        }
+
+        /// <summary>
+        ///     The update check runs only once the window is really visible, and never blocks the load:
+        ///     an unreachable release channel is not a reason for the application to fail to start.
+        /// </summary>
+        protected override async Task OnActivatedAsync(CancellationToken cancellationToken)
+        {
+            await base.OnActivatedAsync(cancellationToken);
+
+            if (_updateCheckStarted || !Properties.Settings.Default.CheckForUpdates)
+            {
+                return;
+            }
+
+            _updateCheckStarted = true;
+
+            _ = CheckForUpdatesAsync();
+        }
+
+        private bool _updateCheckStarted;
+
+        /// <summary>
+        ///     No ConfigureAwait(false) in here: the continuations have to land back on the UI thread,
+        ///     which is where the dialog below belongs.
+        /// </summary>
+        private static async Task CheckForUpdatesAsync()
+        {
+            try
+            {
+                var manifest = await ApplicationUpdater.CheckForUpdateAsync();
+
+                if (manifest == null)
+                {
+                    return;
+                }
+
+                var question = string.Format(Localized("updater_available"),
+                    manifest.Version, Global.ApplicationName, VersionHelper.PublishVersion);
+
+                if (MessageBox.Show(question, Localized("updater_title"), MessageBoxButton.YesNo,
+                        MessageBoxImage.Information) != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+
+                var result = await ApplicationUpdater.StageUpdateAsync(manifest);
+
+                if (result.IsApplied)
+                {
+                    MessageBox.Show(
+                        string.Format(Localized("updater_staged"), manifest.Version, result.ExtractedPath,
+                            Global.ApplicationName),
+                        Localized("updater_title"), MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        string.Format(Localized("updater_failed"), Localized(FailureKey(result.Status))),
+                        Localized("updater_title"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception exception)
+            {
+                Log.Error(exception);
+            }
+        }
+
+        private static string FailureKey(UpdateApplyStatus status)
+        {
+            switch (status)
+            {
+                case UpdateApplyStatus.ChecksumMismatch:
+                    return "updater_failure_checksum";
+                case UpdateApplyStatus.SignatureInvalid:
+                    return "updater_failure_signature";
+                case UpdateApplyStatus.DownloadFailed:
+                    return "updater_failure_download_failed";
+                case UpdateApplyStatus.EmptyDownload:
+                    return "updater_failure_empty_download";
+                case UpdateApplyStatus.UnsafeFileName:
+                    return "updater_failure_file_name";
+                default:
+                    return "updater_failure_extraction";
+            }
+        }
+
+        /// <summary>
+        ///     Translation for the current UI culture, with the literal key as the fallback. These
+        ///     strings gate a download of the program's own update, so showing "updater_staged" beats
+        ///     throwing on a missing satellite the way the rename regression did.
+        /// </summary>
+        private static string Localized(string key)
+        {
+            return (LocalizationEx.GetUiString(key, Thread.CurrentThread.CurrentCulture) ?? key)
+                .Replace("\\n", "\n");
         }
 
         private void SettingsViewModelOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)

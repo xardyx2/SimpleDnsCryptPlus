@@ -45,7 +45,10 @@ namespace Tests
 
         private string SignFile(string payloadPath, Minisign.Models.MinisignPrivateKey key)
         {
-            return Core.SignHashed(payloadPath, key, "sdc-plus test", "file:test hashed", dir);
+            // Match what minisign and tools/minisign-tool write: the trusted comment names the file
+            // the hash was taken over, and UpdateArtifactVerifier enforces that binding.
+            return Core.SignHashed(payloadPath, key, "sdc-plus test",
+                "file:" + Path.GetFileName(payloadPath) + " hashed", dir);
         }
 
         [Test]
@@ -77,6 +80,30 @@ namespace Tests
             File.AppendAllText(payload, " injected");
             Assert.IsFalse(UpdateArtifactVerifier.VerifyFile(payload, sig, pub),
                 "modifying the artifact after signing must fail verification");
+        }
+
+        [Test]
+        public void AHashedSignatureIsRejectedWhenTheFileWasRenamed()
+        {
+            // A pre-hashed minisign signature names its payload in the trusted comment, and the
+            // official CLI refuses a file that does not match that name. minisign-net does not, so
+            // without this the app would accept a release-blessed signature replayed onto a
+            // differently-named artifact - and would disagree with the verification instructions we
+            // publish for users who run `minisign -Vm` themselves.
+            var (pub, key) = NewKey("n");
+
+            var signed = Path.Combine(dir, "SimpleDNSCryptPlus-x64-1.0.1-portable.zip");
+            File.WriteAllText(signed, "release bytes");
+            var sig = File.ReadAllText(SignFile(signed, key));
+
+            Assert.IsTrue(UpdateArtifactVerifier.VerifyFile(signed, sig, pub),
+                "sanity: the name must match in the passing case");
+
+            var renamed = Path.Combine(dir, "not-what-was-signed.zip");
+            File.Copy(signed, renamed);
+
+            Assert.IsFalse(UpdateArtifactVerifier.VerifyFile(renamed, sig, pub),
+                "a hashed signature must be bound to the file name it was made over");
         }
 
         [Test]
@@ -145,6 +172,69 @@ namespace Tests
 
             return dir.FullName;
         }
+
+        [Test]
+        public void TheUpdateUrisPointAtAChannelThisRepositoryControls()
+        {
+            // The URIs are compiled in, so a stale value would either 404 forever or - worse - read
+            // someone else's release channel. Both architectures must be https and both must be ours.
+            var uris = new[] { SimpleDnsCrypt.Config.Global.ApplicationUpdateUri,
+                               SimpleDnsCrypt.Config.Global.ApplicationUpdateUri64 };
+
+            foreach (var raw in uris)
+            {
+                Assert.IsTrue(Uri.TryCreate(raw, UriKind.Absolute, out var uri), "not a URI: " + raw);
+                Assert.AreEqual(Uri.UriSchemeHttps, uri.Scheme, "plain http would let the network path rewrite the update");
+                Assert.AreEqual("github.com", uri.Host);
+                Assert.IsTrue(uri.AbsolutePath.StartsWith("/xardyx2/SimpleDnsCryptPlus/releases/"),
+                    "the updater must read this project's releases, not another's: " + raw);
+                Assert.That(raw, Does.Not.Contain("bitbeans"));
+                Assert.That(raw, Does.Not.Contain("raw.githubusercontent.com"));
+            }
+
+            Assert.AreNotEqual(uris[0], uris[1], "x86 and x64 must not share one manifest");
+        }
+
+        [Test]
+        public void AManifestAsTheBuilderScriptWritesItSurvivesParseAndVerification()
+        {
+            // build/make-update-manifest.ps1 puts the whole detached signature into a JSON string, so
+            // it arrives here with embedded newlines and a trailing one. This is the real producer's
+            // shape, including CRLF, which is what a manifest written on Windows looks like.
+            var (pub, key) = NewKey("shaped");
+
+            var payload = Path.Combine(dir, ReleaseZipName);
+            File.WriteAllText(payload, "release bytes");
+            var armored = File.ReadAllText(SignFile(payload, key));
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(new
+            {
+                format = "zip",
+                version = "1.0.1",
+                releaseDate = "2026-09-27",
+                downloadUri = "https://github.com/xardyx2/SimpleDnsCryptPlus/releases/download/v1.0.1/" + ReleaseZipName,
+                sha256 = new string('c', 64),
+                signatureArmored = armored
+            });
+
+            var manifest = UpdateManifest.Parse(json);
+
+            Assert.IsNotNull(manifest, "a manifest in the published shape must parse");
+            Assert.IsTrue(UpdateArtifactVerifier.VerifyFile(
+                payload, manifest.SignatureArmored, pub), "and its signature must still verify");
+
+            // A manifest assembled on Windows carries CRLF inside that string; the reader must not
+            // care which line endings a middle tool chose.
+            var crlfJson = json.Replace("\\n", "\\r\\n");
+            var crlfManifest = UpdateManifest.Parse(crlfJson);
+
+            Assert.IsNotNull(crlfManifest, "a CRLF manifest must parse");
+            Assert.IsTrue(UpdateArtifactVerifier.VerifyFile(
+                payload, crlfManifest.SignatureArmored, pub),
+                "line endings inside the armored signature must not change the verdict");
+        }
+
+        private const string ReleaseZipName = "SimpleDNSCryptPlus-x64-1.0.1-portable.zip";
 
         [Test]
         public void NewerVersionsAreDetectedAndOlderOrEqualAreNot()

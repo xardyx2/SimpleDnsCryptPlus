@@ -18,6 +18,7 @@ namespace SimpleDnsCrypt.ViewModels
         private bool _isAddressBlacklistTabVisible;
         private bool _isAddressBlockLogTabVisible;
         private bool _isCloakAndForwardTabVisible;
+        private bool _isUpdateCheckEnabled;
 
         public SettingsViewModel()
         {
@@ -38,6 +39,7 @@ namespace SimpleDnsCrypt.ViewModels
             _isAddressBlacklistTabVisible = Properties.Settings.Default.IsAddressBlacklistTabVisible;
             _isAddressBlockLogTabVisible = Properties.Settings.Default.IsAddressBlockLogTabVisible;
             _isCloakAndForwardTabVisible = Properties.Settings.Default.IsCloakAndForwardTabVisible;
+            _isUpdateCheckEnabled = Properties.Settings.Default.CheckForUpdates;
         }
 
         /// <summary>
@@ -72,6 +74,20 @@ namespace SimpleDnsCrypt.ViewModels
                 _isAdvancedSettingsTabVisible = value;
                 Properties.Settings.Default.IsAdvancedSettingsTabVisible = _isAdvancedSettingsTabVisible;
                 NotifyOfPropertyChange(() => IsAdvancedSettingsTabVisible);
+            }
+        }
+
+        /// <summary>
+        ///     Whether the application asks its own release channel for a newer version at startup.
+        /// </summary>
+        public bool IsUpdateCheckEnabled
+        {
+            get => _isUpdateCheckEnabled;
+            set
+            {
+                _isUpdateCheckEnabled = value;
+                Properties.Settings.Default.CheckForUpdates = _isUpdateCheckEnabled;
+                NotifyOfPropertyChange(() => IsUpdateCheckEnabled);
             }
         }
 

@@ -98,4 +98,40 @@
 	<resheader name="writer">
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
+  <!-- The strings the updater added in 1.0.0. The 34 Translation.<lang>.resx files come from the
+       original POEditor project, which this fork cannot sync, so anything new is English-only here
+       and reaches other languages through ResourceManager's invariant fallback. -->
+  <data name="settings_check_for_updates" xml:space="preserve">
+    <value>Check for updates on startup</value>
+  </data>
+  <data name="updater_title" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+  <data name="updater_available" xml:space="preserve">
+    <value>Version {0} of {1} is available; you are running {2}.\n\nDownload it now and verify its signature before copying it over this folder?</value>
+  </data>
+  <data name="updater_staged" xml:space="preserve">
+    <value>Version {0} was downloaded, checked against the published checksum and verified against this project's release key.\n\nThe new files are in:\n{1}\n\nClose {2}, then copy those files over the program folder to finish updating.</value>
+  </data>
+  <data name="updater_failed" xml:space="preserve">
+    <value>The update could not be applied: {0}\n\nNothing in the program folder was changed.</value>
+  </data>
+  <data name="updater_failure_download_failed" xml:space="preserve">
+    <value>the release could not be downloaded</value>
+  </data>
+  <data name="updater_failure_empty_download" xml:space="preserve">
+    <value>the download produced an empty file</value>
+  </data>
+  <data name="updater_failure_checksum" xml:space="preserve">
+    <value>the downloaded file does not match the published checksum</value>
+  </data>
+  <data name="updater_failure_signature" xml:space="preserve">
+    <value>the downloaded file is not signed by this project's release key</value>
+  </data>
+  <data name="updater_failure_file_name" xml:space="preserve">
+    <value>the published file name cannot be used as a file</value>
+  </data>
+  <data name="updater_failure_extraction" xml:space="preserve">
+    <value>the archive could not be unpacked</value>
+  </data>
 </root>

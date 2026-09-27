@@ -12,6 +12,23 @@ namespace SimpleDnsCrypt.Config
         public const string ApplicationName = "Simple DNSCrypt Plus";
 
         /// <summary>
+        ///     Remote URI where the application finds its update information, per process architecture.
+        ///
+        ///     These point at releases of this repository. Upstream 0.7.x read
+        ///     raw.githubusercontent.com/bitbeans/.../update.yml and verified the installer against
+        ///     Christian Hermann's minisign key, so no other project can publish to that channel and
+        ///     a fork that kept the URL would be trusting a key it does not hold.
+        /// </summary>
+        public const string ApplicationUpdateUri =
+            "https://github.com/xardyx2/SimpleDnsCryptPlus/releases/latest/download/update-x86.json";
+
+        /// <summary>
+        ///     See <see cref="ApplicationUpdateUri"/>.
+        /// </summary>
+        public const string ApplicationUpdateUri64 =
+            "https://github.com/xardyx2/SimpleDnsCryptPlus/releases/latest/download/update-x64.json";
+
+        /// <summary>
         ///		Output folder for logs.
         /// </summary>
         public const string LogDirectoryName = "logs";

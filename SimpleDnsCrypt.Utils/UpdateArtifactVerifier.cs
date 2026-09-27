@@ -31,9 +31,13 @@ namespace SimpleDnsCrypt.Utils
             try
             {
                 var publicKey = Core.LoadPublicKeyFromString(ExtractKeyLine(publicKeyString));
-                var signature = LoadArmored(armoredSignature);
 
-                if (signature == null || publicKey == null)
+                if (!TryReadArmored(armoredSignature, out var signature, out var trustedComment))
+                {
+                    return false;
+                }
+
+                if (publicKey == null)
                 {
                     return false;
                 }
@@ -45,9 +49,20 @@ namespace SimpleDnsCrypt.Utils
                     return false;
                 }
 
-                return signature.IsHashed
-                    ? Core.ValidateHashedSignature(filePath, signature, publicKey)
-                    : Core.ValidateSignature(filePath, signature, publicKey);
+                if (!signature.IsHashed)
+                {
+                    return Core.ValidateSignature(filePath, signature, publicKey);
+                }
+
+                // A pre-hashed signature covers the content only, so on its own it would verify for
+                // any file with those bytes. The CLI binds it to the name recorded in the trusted
+                // comment; minisign-net does not, so the check is done here.
+                if (!TrustedCommentNames(trustedComment, filePath))
+                {
+                    return false;
+                }
+
+                return Core.ValidateHashedSignature(filePath, signature, publicKey);
             }
             catch (Exception)
             {
@@ -78,8 +93,11 @@ namespace SimpleDnsCrypt.Utils
             return lines.Last(l => !l.StartsWith("untrusted comment:", StringComparison.OrdinalIgnoreCase));
         }
 
-        private static Minisign.Models.MinisignSignature LoadArmored(string armored)
+        private static bool TryReadArmored(string armored, out Minisign.Models.MinisignSignature signature, out string trustedComment)
         {
+            signature = null;
+            trustedComment = null;
+
             var lines = new System.Collections.Generic.List<string>();
 
             foreach (var raw in armored.Replace("\r\n", "\n").Split('\n'))
@@ -98,7 +116,7 @@ namespace SimpleDnsCrypt.Utils
             //   <base64 global signature>
             if (lines.Count != 4)
             {
-                return null;
+                return false;
             }
 
             var untrusted = StripCommentPrefix(lines[0], "untrusted comment:");
@@ -106,10 +124,45 @@ namespace SimpleDnsCrypt.Utils
 
             if (untrusted == null || trusted == null)
             {
-                return null;
+                return false;
             }
 
-            return Core.LoadSignatureFromString(lines[1], trusted, lines[3]);
+            signature = Core.LoadSignatureFromString(lines[1], trusted, lines[3]);
+            trustedComment = trusted;
+
+            return signature != null;
+        }
+
+        /// <summary>
+        /// True when the payload's file name is the one the pre-hashed signature claims to cover.
+        /// The format is "file:&lt;name&gt; hashed"; anything else is refused, because a signature
+        /// that does not name its file cannot be bound to one.
+        /// </summary>
+        private static bool TrustedCommentNames(string trustedComment, string filePath)
+        {
+            const string Prefix = "file:";
+            const string Suffix = " hashed";
+
+            if (string.IsNullOrEmpty(trustedComment) ||
+                !trustedComment.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase) ||
+                !trustedComment.EndsWith(Suffix, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var named = trustedComment.Substring(Prefix.Length, trustedComment.Length - Prefix.Length - Suffix.Length).Trim();
+
+            if (named.Length == 0)
+            {
+                return false;
+            }
+
+            // Signers differ on whether they record a bare name or a path; only the last segment can
+            // be compared, since the app downloads into its own staging directory.
+            var separator = named.LastIndexOfAny(new[] { '/', '\\' });
+            var namedLeaf = separator >= 0 ? named.Substring(separator + 1) : named;
+
+            return string.Equals(namedLeaf, Path.GetFileName(filePath), StringComparison.OrdinalIgnoreCase);
         }
 
         private static string StripCommentPrefix(string line, string prefix)

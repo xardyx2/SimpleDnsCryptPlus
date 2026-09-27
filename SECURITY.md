@@ -35,14 +35,17 @@ code-signing certificate. Integrity is established instead by:
   `tools/dnscrypt-proxy.lock.json` and enforced at build time — a release build fails closed if a
   downloaded binary does not match.
 
-The public key in `tools/keys/update.pub` is **this project's only trust anchor**. Christian
-Hermann's key (`RWTSM+4BNNvkZPNkHgE88ETlhWa+0HDzU5CN8TvbyvmhVUcr6aQXfssV`), which appears in the
-upstream project's history and in old installed copies, is not trusted here and signatures made
-with it are rejected.
+The public key in `tools/keys/update.pub` is **this project's only trust anchor** (key id
+`9D8C68E725C034B1`). Christian Hermann's key (`RWTSM+4BNNvkZPNkHgE88ETlhWa+0HDzU5CN8TvbyvmhVUcr6aQXfssV`),
+which appears in the upstream project's history and in old installed copies, is not trusted here
+and signatures made with it are rejected.
 
 The in-app updater fetches its manifest over HTTPS from this repository's own GitHub Releases and
-verifies the payload's minisign signature inline before writing anything to disk. It never
-performs an in-place self-replacement of the running executable.
+writes the archive into a sibling `_update\` folder, where it must match the manifest's SHA-256 and
+carry a signature from the key above before it is unpacked. A rejected download is deleted and
+nothing is extracted from it. The updater never performs an in-place self-replacement of the running
+executable: applying a staged update means closing the app and copying the folder, which the user
+does deliberately.
 
 ## Known limitations
 

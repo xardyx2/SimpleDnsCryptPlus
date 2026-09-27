@@ -24,7 +24,13 @@ namespace Tests
             "loader_missing_files",
             "loader_loading",
             "loader_successfully_loaded",
-            "loader_failed_loading"
+            "loader_failed_loading",
+            // Added in 1.0.0 and present only in the neutral file: proof that a culture whose
+            // satellite lacks a key still resolves it, which is what keeps new English-only strings
+            // from crashing a German user's app.
+            "updater_available",
+            "updater_staged",
+            "updater_failed"
         };
 
         private static IEnumerable<string> SupportedShortCodes =>
