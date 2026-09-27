@@ -252,6 +252,20 @@ namespace Tests
         }
 
         [Test]
+        public void APreReleaseVersionIsNeverOfferedAsAnUpdate()
+        {
+            // release.yml marks an -rc tag as a prerelease so it stays off /releases/latest, which is
+            // the path the manifest is fetched from. That is only one of the two reasons a candidate
+            // must never reach a user: if the shape check in UpdateChecker were ever loosened to
+            // tolerate suffixes, every install would start being offered unreleased builds.
+            var current = new Version(0, 9, 0);
+
+            Assert.IsFalse(UpdateChecker.IsNewer("0.9.0-rc.1", current), "a candidate is not an update");
+            Assert.IsFalse(UpdateChecker.IsNewer("1.0.0-rc.1", current), "not even one that would sort higher");
+            Assert.IsTrue(UpdateChecker.IsNewer("0.9.1", current), "the numeric release after it still is");
+        }
+
+        [Test]
         public void AnUnparseableVersionDoesNotTriggerAnUpdate()
         {
             var current = new Version(1, 0, 0);
