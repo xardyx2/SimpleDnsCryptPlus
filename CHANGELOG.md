@@ -47,8 +47,8 @@ project folder names likewise stay put.
   version is load-bearing: plain `net10.0-windows` makes NuGet silently fall back to
   ReactiveUI.WPF 19.5.1's .NET Framework 4.8 assets.
 - Dependency updates: MahApps.Metro 2.4.10→2.4.11, ReactiveProperty 9.3.4→9.9.0,
-  NLog 5.2.5→6.2.1, YamlDotNet 13.7.1→18.1.0, Hardcodet.NotifyIcon.Wpf 1.1.0→2.0.1,
-  gong-wpf-dragdrop 3.2.1→4.0.0, Caliburn.Micro 4.0.212→5.0.258.
+  NLog 5.2.5→6.2.1, Hardcodet.NotifyIcon.Wpf 1.1.0→2.0.1, gong-wpf-dragdrop 3.2.1→4.0.0,
+  Caliburn.Micro 4.0.212→5.0.258, and `minisign-net` 1.0.0 added for the update channel.
   `ReactiveUI.WPF` deliberately stays at 19.5.1 — see `docs/adr/0001-stay-on-reactiveui-19.md`.
 - The `dnscrypt-proxy` executables are no longer committed. They are downloaded by
   `build/fetch-proxy.ps1` and verified against SHA-256 digests pinned in
@@ -75,16 +75,29 @@ project folder names likewise stay put.
   silently-skipped test project cannot produce a green build.
 - `Uninstall.exe` ships in the portable zip. It was previously harvested by the MSI, and it is what
   restores each interface to DHCP-supplied DNS.
-- Tests: 5 → 41. New guards cover Caliburn view resolution, translation coverage per culture, and
+- Tests: 5 → 60. New guards cover Caliburn view resolution, translation coverage per culture, and
   consistency between `<AssemblyName>` and the 13 WPFLocalizeExtension references that depend on it.
 - `docs/adr/0001-stay-on-reactiveui-19.md`, `docs/adr/0002-portable-only-no-msi.md`,
   `docs/proxy-supply-chain.md`.
+- An in-app update channel authenticated by **this project's own** minisign key
+  (`tools/keys/update.pub`, compiled in as `UpdateChannel.TrustedPublicKey`). Release zips carry a
+  detached `.minisig`, and `update-x64.json` / `update-x86.json` published as release assets name the
+  artifact, its SHA-256 and its signature. `tools/minisign-tool` generates and applies signatures with
+  no `minisign` install needed, and CI checks its output against the reference CLI — including a
+  deliberately tampered copy that the CLI must reject.
+- `ApplicationUpdater` on the app side: an opt-out check at startup offers a newer release, which is
+  downloaded into a sibling `_update\<version>\` folder and unpacked only after both the published
+  hash and the signature check out. It never replaces the running executable.
+- `settings_check_for_updates` and the updater strings. These live only in the neutral
+  `Translation.resx`, and a test asserts every offered language still resolves them, which is what
+  proves the invariant fallback a frozen translation set depends on.
+
+### Removed
+- `YamlDotNet` and the dead `UriYamlTypeConverter`. The update manifest was their only user, and the
+  manifest is JSON now, so the dependency and its About-screen entry left with it.
 
 ### Planned before `1.0.0`
-- An in-app update channel authenticated by this project's own minisign key, with release
-  artefacts signed.
-- Translation key-drift check in CI, and a check that `<AssemblyName>` and the localisation
-  references stay in sync.
+- Translation key-drift check in CI.
 - Backlog triage with written reproductions.
 
 ## [0.8.2] - 2023-11-17 — instant.sc

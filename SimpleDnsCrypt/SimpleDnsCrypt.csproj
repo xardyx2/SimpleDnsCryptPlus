@@ -48,7 +48,7 @@
     <EmbeddedResource Include="Resources\Licenses\MahApps.Metro.SimpleChildWindow.txt" />
     <EmbeddedResource Include="Resources\Licenses\Hardcodet.NotifyIcon.txt" />
     <EmbeddedResource Include="Resources\Licenses\NLog.txt" />
-    <EmbeddedResource Include="Resources\Licenses\YamlDotNet.txt" />
+    <EmbeddedResource Include="Resources\Licenses\minisign-net.txt" />
     <EmbeddedResource Include="Resources\Licenses\Newtonsoft.Json.txt" />
     <EmbeddedResource Include="Resources\Licenses\WPFLocalizationExtension.txt" />
     <EmbeddedResource Include="Resources\Licenses\Nett.txt" />
@@ -69,7 +69,6 @@
     <PackageReference Include="System.ComponentModel.Composition" Version="10.0.12" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.12" />
     <PackageReference Include="WPFLocalizeExtension" Version="3.10.0" />
-    <PackageReference Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SimpleDnsCrypt.Utils\SimpleDnsCrypt.Utils.csproj" />

@@ -133,12 +133,12 @@ namespace SimpleDnsCrypt.ViewModels
                     },
                     new License
                     {
-                        LicenseHeaderText = "YamlDotNet",
-                        LicenseText = await LoadLicense("YamlDotNet.txt").ConfigureAwait(false),
+                        LicenseHeaderText = "minisign-net",
+                        LicenseText = await LoadLicense("minisign-net.txt").ConfigureAwait(false),
                         LicenseCodeLink = new LicenseLink
                         {
                             LinkText = LocalizationEx.GetUiString("about_view_on_github", Thread.CurrentThread.CurrentCulture),
-                            LinkUri = new Uri("https://github.com/aaubry/YamlDotNet")
+                            LinkUri = new Uri("https://github.com/bitbeans/minisign-net")
                         }
                     },
                     new License
