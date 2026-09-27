@@ -10,7 +10,14 @@ their respective repositories for authoritative histories.
 
 ## [Unreleased]
 
-Work in progress on `master`. Nothing here is released yet.
+Nothing has landed since the release candidate below.
+
+## [0.9.0-rc.1] - 2026-09-27
+
+The first published artifact of this fork, and deliberately a release candidate rather than `0.9.0`:
+no person has driven the tray menu or the three drag-drop surfaces yet, the memory-bound fix has not
+been soaked, and the settings GUI covers only part of what dnscrypt-proxy 2.1.18 accepts. What the
+candidate contains:
 
 ### Added
 - Fork of `DNSCrypt/SimpleDnsCrypt` merged with all 58 commits of `instantsc/SimpleDnsCrypt`, so
@@ -132,6 +139,7 @@ project folder names likewise stay put.
 - Last release of the original project. dnscrypt-proxy 2.0.42, fallback-resolver dialog, tray
   mode, window-size memory.
 
-[Unreleased]: https://github.com/xardyx2/SimpleDnsCryptPlus
+[Unreleased]: https://github.com/xardyx2/SimpleDnsCryptPlus/compare/v0.9.0-rc.1...HEAD
+[0.9.0-rc.1]: https://github.com/xardyx2/SimpleDnsCryptPlus/releases/tag/v0.9.0-rc.1
 [0.8.2]: https://github.com/instantsc/SimpleDnsCrypt/releases/tag/0.8.2
 [0.7.1]: https://github.com/DNSCrypt/SimpleDnsCrypt/releases/tag/0.7.1
