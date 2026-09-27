@@ -25,7 +25,7 @@ namespace Tests
             "loader_loading",
             "loader_successfully_loaded",
             "loader_failed_loading",
-            // Added in 1.0.0 and present only in the neutral file: proof that a culture whose
+            // Added with the first Plus updater and present only in the neutral file: proof that a
             // satellite lacks a key still resolves it, which is what keeps new English-only strings
             // from crashing a German user's app.
             "updater_available",

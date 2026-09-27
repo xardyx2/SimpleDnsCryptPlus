@@ -32,7 +32,7 @@ crashing — which matters here specifically, because `string.Format(null, …)`
 `ArgumentNullException`, and that exact path once left the application stuck on its splash screen.
 
 Known English-only additions so far: the update channel strings (`updater_*`,
-`settings_check_for_updates`, added with the 1.0.0 updater).
+`settings_check_for_updates`, added with the first Plus updater).
 
 The `LocalizationCoverageTests` list of loader format keys includes those new keys on purpose: it is
 the proof that the invariant fallback actually works for every offered culture, not an assumption about

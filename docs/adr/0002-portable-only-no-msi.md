@@ -29,7 +29,7 @@ database, no service registration side effects at install time.
 
 ## Decision
 
-Ship **portable zips only** for `v1.0.0`, one per architecture, each with a SHA-256 in
+Ship **portable zips only** for `v0.9.0`, one per architecture, each with a SHA-256 in
 `SHA256SUMS.txt`. Keep `Installer/` in the tree as a reference, referenced by **no** workflow.
 
 ## Consequences

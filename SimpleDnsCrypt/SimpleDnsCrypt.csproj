@@ -9,9 +9,9 @@
     <Company>Esperion</Company>
     <Description>Simple management tool for dnscrypt-proxy</Description>
     <Copyright>Copyright © 2015 - 2020 Christian Hermann, 2021 - 2023 instant.sc, 2026 Esperion</Copyright>
-    <Version>1.0.0</Version>
-    <AssemblyVersion>1.0.0</AssemblyVersion>
-    <FileVersion>1.0.0</FileVersion>
+    <Version>0.9.0</Version>
+    <AssemblyVersion>0.9.0</AssemblyVersion>
+    <FileVersion>0.9.0</FileVersion>
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Images\simplednscrypt.ico</ApplicationIcon>

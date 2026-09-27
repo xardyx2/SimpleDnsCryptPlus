@@ -24,8 +24,11 @@ Work in progress on `master`. Nothing here is released yet.
   product, `AssemblyName` → `SimpleDnsCryptPlus` (so the executable is
   `SimpleDnsCryptPlus.exe`), manifest assembly identity, and copyright attribution extended to
   include both predecessors by name.
-- Version baseline set to `1.0.0`, deliberately greater than the `0.7.1` and `0.8.2` builds
-  already in circulation.
+- Version baseline set to `0.9.0`. It has to sort above the `0.7.1` and `0.8.2` builds still in
+  circulation so no one is offered a downgrade, and that is the whole claim the number makes: `.NET 10`,
+  a new update channel and a real CI pipeline are all in place, but the tray and drag-drop surfaces
+  have never been driven by a human, the memory-bound fix has not been soaked, and the GUI still
+  writes only part of what dnscrypt-proxy can be told. `1.0.0` is reserved for when those close.
 
 ### Removed
 - Upstream's `README.md` badges pointing at a personal AppVeyor project, portable-download links
@@ -106,6 +109,15 @@ project folder names likewise stay put.
   VM guest lists interfaces at all, which is what makes the DNS-writing paths testable.
 
 ### Still open before `1.0.0`
+- **The proxy's configuration surface is only partly ours.** `example-dnscrypt-proxy.toml` from 2.1.18
+  documents settings we never model, and the notable omissions are the ones that define the 2.1 line:
+  `pqdnscrypt` (post-quantum), `odoh_servers`, `enable_hot_reload`, `bootstrap_resolvers`, plus whole
+  sections with no representation at all — `[schedules]`, `[monitoring_ui]`, `[ip_encryption]`,
+  `[local_doh]`, `[captive_portals]` — and the `allowed_*` / `blocked_ips` half of the blacklist.
+  Because `DnscryptProxyConfigurationManager` deserialises to a typed object and writes that object
+  back, a key set by hand is deleted on the next save, comments included. Either the round-trip has to
+  preserve what it does not understand, or the keys above have to become settings; until one of those
+  is true, "bundles dnscrypt-proxy 2.1.18" must not be read as "exposes dnscrypt-proxy 2.1.18".
 - A person has to look at the tray icon menu and the three drag-drop surfaces. Both libraries took a
   major bump, the app runs elevated, and UIPI stops a non-elevated automation from driving it.
 - Announcing the fork where the users are (`DNSCrypt/SimpleDnsCrypt#554`/`#581`,

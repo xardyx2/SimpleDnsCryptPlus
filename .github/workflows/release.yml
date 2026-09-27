@@ -197,6 +197,9 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Simple DNSCrypt Plus ${{ needs.build.outputs.version }}
+          # An -rc tag must not become /releases/latest: the application reads its update
+          # manifest from that path, so a prerelease would otherwise hijack the stable channel.
+          prerelease: ${{ contains(github.ref_name, '-rc.') }}
           generate_release_notes: true
           files: staged/*
           body: |
