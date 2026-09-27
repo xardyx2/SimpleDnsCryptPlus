@@ -24,7 +24,13 @@ namespace Tests
             "loader_missing_files",
             "loader_loading",
             "loader_successfully_loaded",
-            "loader_failed_loading"
+            "loader_failed_loading",
+            // Added with the first Plus updater and present only in the neutral file: proof that a
+            // satellite lacks a key still resolves it, which is what keeps new English-only strings
+            // from crashing a German user's app.
+            "updater_available",
+            "updater_staged",
+            "updater_failed"
         };
 
         private static IEnumerable<string> SupportedShortCodes =>
@@ -77,6 +83,66 @@ namespace Tests
 
             Assert.IsEmpty(orphaned,
                 "translation files that no user can ever select: " + string.Join(", ", orphaned));
+        }
+
+        /// <summary>
+        /// The 34 language files came out of one POEditor export and still carry an identical key set.
+        /// That is the one property worth freezing: a key that reaches only some languages produces an
+        /// interface that is half translated, and the only way to notice is to compare them.
+        ///
+        /// The neutral Translation.resx is deliberately excluded. New strings are added there first
+        /// and reach every culture through ResourceManager's invariant fallback, so a key present only
+        /// in neutral is the designed state, not drift.
+        /// </summary>
+        [Test]
+        public void AllLanguageFilesCarryTheSameKeys()
+        {
+            var dir = Path.Combine(FindRepoRoot(), "SimpleDnsCrypt", "Resources");
+            var byLanguage = Directory.GetFiles(dir, "Translation.*.resx")
+                .ToDictionary(KeyFromFileName, ReadKeys);
+
+            Assert.Greater(byLanguage.Count, 1, "expected the full set of language files");
+
+            var reference = byLanguage.OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase).First();
+            var baseline = new HashSet<string>(reference.Value);
+
+            var drift = new List<string>();
+
+            foreach (var entry in byLanguage)
+            {
+                var missing = baseline.Except(entry.Value).ToList();
+                var extra = entry.Value.Except(baseline).ToList();
+
+                if (missing.Count > 0 || extra.Count > 0)
+                {
+                    drift.Add($"{entry.Key}: missing [{string.Join(", ", missing.OrderBy(k => k))}] " +
+                              $"unexpected [{string.Join(", ", extra.OrderBy(k => k))}]");
+                }
+            }
+
+            Assert.IsEmpty(drift,
+                $"language files no longer agree with {reference.Key} ({baseline.Count} keys):\n" +
+                string.Join("\n", drift));
+        }
+
+        private static string KeyFromFileName(string path)
+        {
+            var name = Path.GetFileNameWithoutExtension(path);
+            return name.Substring("Translation.".Length).ToLowerInvariant();
+        }
+
+        private static HashSet<string> ReadKeys(string resxPath)
+        {
+            // Parsed, not matched: the resx schema comment contains literal <data name="...">
+            // examples, and a regex would read those as keys in every file - which agrees across
+            // languages, so a regex-only check would pass while measuring the wrong thing.
+            var document = System.Xml.Linq.XDocument.Load(resxPath);
+
+            return document.Root
+                .Elements("data")
+                .Select(e => (string)e.Attribute("name"))
+                .Where(n => !string.IsNullOrEmpty(n))
+                .ToHashSet();
         }
 
         private static HashSet<string> TranslationFileCultures()

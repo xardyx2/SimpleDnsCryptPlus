@@ -24,8 +24,11 @@ Work in progress on `master`. Nothing here is released yet.
   product, `AssemblyName` → `SimpleDnsCryptPlus` (so the executable is
   `SimpleDnsCryptPlus.exe`), manifest assembly identity, and copyright attribution extended to
   include both predecessors by name.
-- Version baseline set to `1.0.0`, deliberately greater than the `0.7.1` and `0.8.2` builds
-  already in circulation.
+- Version baseline set to `0.9.0`. It has to sort above the `0.7.1` and `0.8.2` builds still in
+  circulation so no one is offered a downgrade, and that is the whole claim the number makes: `.NET 10`,
+  a new update channel and a real CI pipeline are all in place, but the tray and drag-drop surfaces
+  have never been driven by a human, the memory-bound fix has not been soaked, and the GUI still
+  writes only part of what dnscrypt-proxy can be told. `1.0.0` is reserved for when those close.
 
 ### Removed
 - Upstream's `README.md` badges pointing at a personal AppVeyor project, portable-download links
@@ -47,8 +50,8 @@ project folder names likewise stay put.
   version is load-bearing: plain `net10.0-windows` makes NuGet silently fall back to
   ReactiveUI.WPF 19.5.1's .NET Framework 4.8 assets.
 - Dependency updates: MahApps.Metro 2.4.10→2.4.11, ReactiveProperty 9.3.4→9.9.0,
-  NLog 5.2.5→6.2.1, YamlDotNet 13.7.1→18.1.0, Hardcodet.NotifyIcon.Wpf 1.1.0→2.0.1,
-  gong-wpf-dragdrop 3.2.1→4.0.0, Caliburn.Micro 4.0.212→5.0.258.
+  NLog 5.2.5→6.2.1, Hardcodet.NotifyIcon.Wpf 1.1.0→2.0.1, gong-wpf-dragdrop 3.2.1→4.0.0,
+  Caliburn.Micro 4.0.212→5.0.258, and `minisign-net` 1.0.0 added for the update channel.
   `ReactiveUI.WPF` deliberately stays at 19.5.1 — see `docs/adr/0001-stay-on-reactiveui-19.md`.
 - The `dnscrypt-proxy` executables are no longer committed. They are downloaded by
   `build/fetch-proxy.ps1` and verified against SHA-256 digests pinned in
@@ -58,11 +61,13 @@ project folder names likewise stay put.
 
 ### Fixed
 - Query, domain-block and address-block log views grew without bound for the life of the process,
-  behind upstream issue #19 (4 GB working set). Now capped at 1000 entries each, enforced at the
-  type level so reverting it is a compile error.
-- The log tail readers stalled permanently after dnscrypt-proxy rotated a log file — upstream
-  issue #287, "broken until restart". The seek landed past EOF and the stale offset was re-recorded
-  every 500 ms forever.
+  behind [instantsc/SimpleDnsCrypt#19](https://github.com/instantsc/SimpleDnsCrypt/issues/19)
+  ("4gb ram usage!"). Now capped at 1000 entries each, enforced at the type level so reverting it is
+  a compile error.
+- The log tail readers stalled permanently after dnscrypt-proxy rotated a log file —
+  [DNSCrypt/SimpleDnsCrypt#287](https://github.com/DNSCrypt/SimpleDnsCrypt/issues/287), "Query log is
+  broken until Simple DNSCrypt is restarted". The seek landed past EOF and the stale offset was
+  re-recorded every 500 ms forever.
 - The configuration migration overwrote a user's custom resolver `sources` list unconditionally;
   it now only replaces the untouched v2 default pair. This also removes a latent
   `IndexOutOfRangeException` on a single-URL source list.
@@ -75,17 +80,49 @@ project folder names likewise stay put.
   silently-skipped test project cannot produce a green build.
 - `Uninstall.exe` ships in the portable zip. It was previously harvested by the MSI, and it is what
   restores each interface to DHCP-supplied DNS.
-- Tests: 5 → 41. New guards cover Caliburn view resolution, translation coverage per culture, and
+- Tests: 5 → 60. New guards cover Caliburn view resolution, translation coverage per culture, and
   consistency between `<AssemblyName>` and the 13 WPFLocalizeExtension references that depend on it.
 - `docs/adr/0001-stay-on-reactiveui-19.md`, `docs/adr/0002-portable-only-no-msi.md`,
   `docs/proxy-supply-chain.md`.
+- An in-app update channel authenticated by **this project's own** minisign key
+  (`tools/keys/update.pub`, compiled in as `UpdateChannel.TrustedPublicKey`). Release zips carry a
+  detached `.minisig`, and `update-x64.json` / `update-x86.json` published as release assets name the
+  artifact, its SHA-256 and its signature. `tools/minisign-tool` generates and applies signatures with
+  no `minisign` install needed, and CI checks its output against the reference CLI — including a
+  deliberately tampered copy that the CLI must reject.
+- `ApplicationUpdater` on the app side: an opt-out check at startup offers a newer release, which is
+  downloaded into a sibling `_update\<version>\` folder and unpacked only after both the published
+  hash and the signature check out. It never replaces the running executable.
+- `settings_check_for_updates` and the updater strings. These live only in the neutral
+  `Translation.resx`, and a test asserts every offered language still resolves them, which is what
+  proves the invariant fallback a frozen translation set depends on.
 
-### Planned before `1.0.0`
-- An in-app update channel authenticated by this project's own minisign key, with release
-  artefacts signed.
-- Translation key-drift check in CI, and a check that `<AssemblyName>` and the localisation
-  references stay in sync.
-- Backlog triage with written reproductions.
+### Removed
+- `YamlDotNet` and the dead `UriYamlTypeConverter`. The update manifest was their only user, and the
+  manifest is JSON now, so the dependency and its About-screen entry left with it.
+
+### Added
+- `docs/testing/dns-safety.md` (the R0/R1/R2 protocol for testing software that rewrites your DNS),
+  `docs/AV-FALSE-POSITIVES.md`, `translations/README.md` and `docs/backlog-triage.md`.
+- A translation key-drift guard: the 34 language files still carry an identical set of 191 keys, and a
+  test fails if one diverges. `SIMPLEDNSCRYPT_ALLOW_VIRTUAL_NICS=1` lifts the adapter blacklist so a
+  VM guest lists interfaces at all, which is what makes the DNS-writing paths testable.
+
+### Still open before `1.0.0`
+- **The proxy's configuration surface is only partly ours.** `example-dnscrypt-proxy.toml` from 2.1.18
+  documents settings we never model, and the notable omissions are the ones that define the 2.1 line:
+  `pqdnscrypt` (post-quantum), `odoh_servers`, `enable_hot_reload`, `bootstrap_resolvers`, plus whole
+  sections with no representation at all — `[schedules]`, `[monitoring_ui]`, `[ip_encryption]`,
+  `[local_doh]`, `[captive_portals]` — and the `allowed_*` / `blocked_ips` half of the blacklist.
+  Because `DnscryptProxyConfigurationManager` deserialises to a typed object and writes that object
+  back, a key set by hand is deleted on the next save, comments included. Either the round-trip has to
+  preserve what it does not understand, or the keys above have to become settings; until one of those
+  is true, "bundles dnscrypt-proxy 2.1.18" must not be read as "exposes dnscrypt-proxy 2.1.18".
+- A person has to look at the tray icon menu and the three drag-drop surfaces. Both libraries took a
+  major bump, the app runs elevated, and UIPI stops a non-elevated automation from driving it.
+- Announcing the fork where the users are (`DNSCrypt/SimpleDnsCrypt#554`/`#581`,
+  `instantsc/SimpleDnsCrypt#27`). Drafted, deliberately not sent.
+- The update channel's dry run against a real published release, which needs the first tag.
 
 ## [0.8.2] - 2023-11-17 — instant.sc
 - Updated to .NET 8. Updated dependencies and dnscrypt-proxy to 2.1.5. Markup fixes and cleaner

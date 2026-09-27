@@ -1,4 +1,4 @@
-[![license](https://img.shields.io/github/license/xardyx2/SimpleDnsCryptPlus.svg?style=flat-square)](LICENSE.md)
+﻿[![license](https://img.shields.io/github/license/xardyx2/SimpleDnsCryptPlus.svg?style=flat-square)](LICENSE.md)
 [![release](https://img.shields.io/github/v/release/xardyx2/SimpleDnsCryptPlus.svg?style=flat-square)](https://github.com/xardyx2/SimpleDnsCryptPlus/releases/latest)
 [![dnscrypt-proxy](https://img.shields.io/badge/dnscrypt--proxy-2.1.5-orange.svg?style=flat-square)](https://github.com/DNSCrypt/dnscrypt-proxy)
 
@@ -20,7 +20,7 @@ A simple management tool to configure [dnscrypt-proxy](https://github.com/DNSCry
 
 | | [upstream](https://github.com/DNSCrypt/SimpleDnsCrypt) | [instantsc](https://github.com/instantsc/SimpleDnsCrypt) | this fork (today → target) |
 |---|---|---|---|
-| Last release | 0.7.1 — Apr 2020 | 0.8.2 — Nov 2023 | none yet → `1.0.0` |
+| Last release | 0.7.1 — Apr 2020 | 0.8.2 — Nov 2023 | none yet → `0.9.0-rc.1` |
 | Target framework | .NET Framework 4.8 | .NET 8 | .NET 8 → **.NET 10** |
 | CI actually running | none in repo (AppVeyor lived on the author's personal account) | workflow committed, **never executed once** | none yet → GitHub Actions, release-gating |
 | Bundled dnscrypt-proxy | 2.1.15 | 2.1.5 | 2.1.5 → **2.1.18**, fetched at build time with pinned SHA-256 |
@@ -35,19 +35,26 @@ reimplementation nor upstream's resolver-list migration.
 
 - **Artifacts are unsigned.** There is no Authenticode certificate. SmartScreen will warn, and
   some antivirus products report false positives for this class of app — it writes per-interface
-  DNS settings under `HKLM` and ships a Go binary. See [docs/AV-FALSE-POSITIVES.md](docs).
+  DNS settings under `HKLM` and ships a Go binary. See [docs/AV-FALSE-POSITIVES.md](docs/AV-FALSE-POSITIVES.md).
   Verifying the published SHA-256 and minisign signature is the intended check instead.
 - **Existing installations cannot be upgraded remotely, ever.** Upstream 0.7.x polls
   `raw.githubusercontent.com/bitbeans/.../update.yml` and validates against *Christian Hermann's*
   minisign public key, which this fork does not and never will hold. 0.8.x builds have no
   updater at all. If you have an old copy, uninstall it and install a zip from here.
+- **The GUI writes a subset of what dnscrypt-proxy 2.1.18 can do.** `dnscrypt-proxy.toml` is
+  round-tripped through a typed model, so keys this app does not expose — `pqdnscrypt`,
+  `odoh_servers`, `enable_hot_reload`, `bootstrap_resolvers`, `[schedules]`, `[monitoring_ui]`,
+  `[ip_encryption]`, `[local_doh]`, `[captive_portals]`, and the `allowed_*` / `blocked_ips` side of
+  the blacklist — cannot be set from here, and if you add them by hand they are erased the next time
+  the app saves, comments included. This behaviour is inherited from 0.7.x/0.8.2, not a regression
+  introduced here; closing it is a stated gate before `1.0.0`.
 - **Settings do not migrate across the rename.** In .NET, user settings storage is tied to the
   binary identity. Because the executable is now `SimpleDnsCryptPlus.exe`, window position and
   similar preferences start fresh. Your `dnscrypt-proxy.toml` and rule files are unaffected —
   they live next to the executable and keep their original names.
 - **Translations are frozen.** The old POEditor project is owned by upstream's author.
   `Resources/Translation.*.resx` in this repository is now the source of truth, and new strings
-  ship English-only. See [translations/README.md](translations).
+  ship English-only. See [translations/README.md](translations/README.md).
 - **Portable zip only, for now.** The MSI project is kept in-tree but built by no workflow; it
   uses WiX v3, which cannot be built by `dotnet build` and whose successor (v4+) is a rewrite.
   If you used an MSI from any earlier project, uninstall it first — a portable copy and an
@@ -58,15 +65,17 @@ reimplementation nor upstream's resolver-list migration.
 
 Portable, self-contained (no .NET installation needed):
 
-- `SimpleDNSCryptPlus-<version>-x64-portable.zip`
-- `SimpleDNSCryptPlus-<version>-x86-portable.zip`
+- `SimpleDNSCryptPlus-x64-<version>-portable.zip`
+- `SimpleDNSCryptPlus-x86-<version>-portable.zip`
 
 Grab them from [Releases](https://github.com/xardyx2/SimpleDnsCryptPlus/releases/latest).
 Each release carries `SHA256SUMS.txt` and a `.zip.minisig`. Verify with:
 
 ```powershell
-Get-FileHash .\SimpleDNSCryptPlus-1.0.0-x64-portable.zip -Algorithm SHA256
-minisign -Vm .\SimpleDNSCryptPlus-1.0.0-x64-portable.zip -p keys\update.pub
+Get-FileHash .\SimpleDNSCryptPlus-x64-0.9.0-portable.zip -Algorithm SHA256
+minisign -Vm .\SimpleDNSCryptPlus-x64-0.9.0-portable.zip `
+  -x .\SimpleDNSCryptPlus-x64-0.9.0-portable.zip.minisig `
+  -p .\update.pub
 ```
 
 Unzip anywhere you like, run `SimpleDnsCryptPlus.exe` as administrator. To remove the service,
@@ -86,7 +95,7 @@ The `dnscrypt-proxy` binaries are **not** committed. A release build downloads t
 upstream and fails closed unless the digests match `tools/dnscrypt-proxy.lock.json`. For offline
 or source-only builds, set `-p:SkipDnscryptProxyDownload=true`.
 
-Before testing changes that touch live DNS, read [docs/testing/dns-safety.md](docs). The app
+Before testing changes that touch live DNS, read [docs/testing/dns-safety.md](docs/testing/dns-safety.md). The app
 installs a Windows service and rewrites per-interface DNS; testing it naively can leave your own
 machine unable to resolve any name — which also blocks you from looking up the fix.
 

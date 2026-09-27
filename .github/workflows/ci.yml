@@ -101,3 +101,115 @@ jobs:
             artifacts/SHA256SUMS-*.txt
           if-no-files-found: error
           retention-days: 14
+
+  # The release key never appears here. What this proves instead is the seam that would break a
+  # release silently: signatures made by tools/minisign-tool must be accepted by the reference
+  # minisign CLI that users are told to run, and rejected after tampering. It also exercises
+  # build/make-update-manifest.ps1, whose output the application parses.
+  signing:
+    name: signing round-trip
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Install .NET from global.json
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Install the reference minisign CLI
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends minisign
+          # 0.11 has no --version flag, and an unhelpful exit code here would look like a signing bug.
+          dpkg -s minisign | grep -E '^(Package|Version):'
+          command -v minisign
+
+      - name: Generate a throwaway key and sign a stand-in artifact
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $work = Join-Path ([System.IO.Path]::GetTempPath()) ('sdc-sign-' + [guid]::NewGuid().ToString('N'))
+          New-Item -ItemType Directory -Force -Path (Join-Path $work 'keys') | Out-Null
+
+          # pwsh rather than bash for this step: Actions echoes every bash line into the log, and a
+          # freshly generated passphrase is read from a file here.
+          dotnet run --project tools/minisign-tool -c Release -- keygen --out (Join-Path $work 'keys')
+          if ($LASTEXITCODE -ne 0) { throw 'keygen failed' }
+
+          # Any bytes will do: nothing in this chain opens the archive, and the names are what the
+          # signature and manifest bind to.
+          $zip = Join-Path $work 'SimpleDNSCryptPlus-x64-0.0.0-portable.zip'
+          [System.IO.File]::WriteAllBytes($zip, (1..4096 | ForEach-Object { [byte]($_ % 256) }))
+
+          $env:MINISIGN_PRIVATE_KEY = Get-Content (Join-Path $work 'keys/update.key') -Raw
+          $env:MINISIGN_PASSWORD = (Get-Content (Join-Path $work 'keys/update.passphrase') -Raw).Trim()
+
+          dotnet run --project tools/minisign-tool -c Release -- sign --file $zip --signature-out "$zip.minisig"
+          if ($LASTEXITCODE -ne 0) { throw 'signing failed' }
+
+          # Later steps get the folder through the env file; a step's shell does not persist.
+          "SDC_WORK=$work" >> $env:GITHUB_ENV
+
+      - name: The reference CLI must accept what our tool signed
+        shell: bash
+        run: |
+          set -euo pipefail
+          zip="$SDC_WORK/SimpleDNSCryptPlus-x64-0.0.0-portable.zip"
+          minisign -Vm "$zip" -x "$zip.minisig" -p "$SDC_WORK/keys/update.pub"
+
+      - name: The reference CLI must reject a tampered artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          zip="$SDC_WORK/SimpleDNSCryptPlus-x64-0.0.0-portable.zip"
+          printf 'tamper' >> "$zip"
+          if minisign -Vm "$zip" -x "$zip.minisig" -p "$SDC_WORK/keys/update.pub"; then
+            echo "the CLI accepted a modified artifact - the signature check is not a check"
+            exit 1
+          fi
+          echo "tampered artifact rejected, as it must be"
+
+      - name: The manifest builder produces what the updater can read
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zip = Join-Path $env:SDC_WORK 'SimpleDNSCryptPlus-x64-0.0.0-portable.zip'
+
+          # Re-sign: the step above deliberately corrupted the file it verified.
+          $env:MINISIGN_PRIVATE_KEY = Get-Content (Join-Path $env:SDC_WORK 'keys/update.key') -Raw
+          $env:MINISIGN_PASSWORD = (Get-Content (Join-Path $env:SDC_WORK 'keys/update.passphrase') -Raw).Trim()
+          Remove-Item "$zip.minisig"
+          dotnet run --project tools/minisign-tool -c Release -- sign --file $zip --signature-out "$zip.minisig"
+          if ($LASTEXITCODE -ne 0) { throw 'signing failed' }
+
+          pwsh -NoProfile -File build/make-update-manifest.ps1 -Arch x64 -Version 0.0.0 -ArtifactDir $env:SDC_WORK
+
+          $manifestPath = Join-Path $env:SDC_WORK 'update-x64.json'
+          $bytes = [System.IO.File]::ReadAllBytes($manifestPath)
+          if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+            throw 'the manifest starts with a UTF-8 BOM; both JSON readers would then fail to parse it'
+          }
+
+          $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+          foreach ($field in 'format', 'version', 'releaseDate', 'downloadUri', 'sha256', 'signatureArmored') {
+            if ([string]::IsNullOrWhiteSpace([string]$manifest.$field)) { throw "manifest is missing '$field'" }
+          }
+          if ($manifest.format -ne 'zip') { throw "format must be 'zip'" }
+          if (-not $manifest.downloadUri.StartsWith('https://')) { throw 'downloadUri must be https' }
+          $expected = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($manifest.sha256 -ne $expected) { throw 'manifest sha256 does not match the artifact' }
+
+          # UpdateArtifactVerifier accepts exactly four non-blank lines in a detached signature, so
+          # the shape the manifest carries has to be that - anything else means "no update" later.
+          $lines = @((Get-Content "$zip.minisig" -Raw) -split "`r?`n" | Where-Object { $_.Trim() })
+          if ($lines.Count -ne 4) { throw "expected a 4-line signature, found $($lines.Count)" }
+          if (-not $lines[0].StartsWith('untrusted comment:')) { throw 'unexpected signature line 1' }
+          if (-not $lines[2].StartsWith('trusted comment:')) { throw 'unexpected signature line 3' }
+          if ($manifest.signatureArmored.Trim() -ne (Get-Content "$zip.minisig" -Raw).Trim()) {
+            throw 'the manifest does not carry the signature that was just made'
+          }
+
+          Write-Host 'manifest shape and signature framing match what the application expects'
