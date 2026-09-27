@@ -1,5 +1,5 @@
-[![license](https://img.shields.io/github/license/esperion-agency/SimpleDnsCryptPlus.svg?style=flat-square)](LICENSE.md)
-[![release](https://img.shields.io/github/v/release/esperion-agency/SimpleDnsCryptPlus.svg?style=flat-square)](https://github.com/esperion-agency/SimpleDnsCryptPlus/releases/latest)
+[![license](https://img.shields.io/github/license/xardyx2/SimpleDnsCryptPlus.svg?style=flat-square)](LICENSE.md)
+[![release](https://img.shields.io/github/v/release/xardyx2/SimpleDnsCryptPlus.svg?style=flat-square)](https://github.com/xardyx2/SimpleDnsCryptPlus/releases/latest)
 [![dnscrypt-proxy](https://img.shields.io/badge/dnscrypt--proxy-2.1.5-orange.svg?style=flat-square)](https://github.com/DNSCrypt/dnscrypt-proxy)
 
 # Simple DNSCrypt Plus
@@ -61,7 +61,7 @@ Portable, self-contained (no .NET installation needed):
 - `SimpleDNSCryptPlus-<version>-x64-portable.zip`
 - `SimpleDNSCryptPlus-<version>-x86-portable.zip`
 
-Grab them from [Releases](https://github.com/esperion-agency/SimpleDnsCryptPlus/releases/latest).
+Grab them from [Releases](https://github.com/xardyx2/SimpleDnsCryptPlus/releases/latest).
 Each release carries `SHA256SUMS.txt` and a `.zip.minisig`. Verify with:
 
 ```powershell
