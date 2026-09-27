@@ -18,6 +18,31 @@ namespace SimpleDnsCrypt.Helper
         private static readonly ILog Log = LogManagerHelper.Factory();
 
         /// <summary>
+        ///     Set <c>SIMPLEDNSCRYPT_ALLOW_VIRTUAL_NICS=1</c> to list adapters the blacklist would
+        ///     hide. A VM guest is made entirely of blacklisted descriptions, so without this there is
+        ///     no interface to select and the DNS-writing paths cannot be tested anywhere except a
+        ///     physical machine. Read on each access so a test, or a relaunched shell, can change it.
+        /// </summary>
+        public static bool AllowVirtualNetworkInterfaces =>
+            Environment.GetEnvironmentVariable("SIMPLEDNSCRYPT_ALLOW_VIRTUAL_NICS") == "1";
+
+        /// <summary>
+        ///     Whether an adapter is one of the virtual, tunnel or loopback kinds that are hidden by
+        ///     default. A match in either the description or the adapter name is enough.
+        /// </summary>
+        public static bool IsFilteredOut(string description, string name, bool allowVirtual)
+        {
+            if (allowVirtual)
+            {
+                return false;
+            }
+
+            var text = (description ?? string.Empty) + "\n" + (name ?? string.Empty);
+
+            return Global.NetworkInterfaceBlacklist.Any(text.Contains);
+        }
+
+        /// <summary>
         ///     Get a list of the local network interfaces.
         /// </summary>
         /// <param name="listenAddresses"></param>
@@ -40,12 +65,9 @@ namespace SimpleDnsCrypt.Helper
                     }
                 }
 
-                if (!showHiddenCards)
+                if (!showHiddenCards && IsFilteredOut(nic.Description, nic.Name, AllowVirtualNetworkInterfaces))
                 {
-                    var add = Global.NetworkInterfaceBlacklist
-                        .All(blacklistEntry => !nic.Description.Contains(blacklistEntry) && 
-                                               !nic.Name.Contains(blacklistEntry));
-                    if (!add) continue;
+                    continue;
                 }
 
                 var addressList = nic.GetIPProperties()
