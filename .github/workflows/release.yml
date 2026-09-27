@@ -209,10 +209,14 @@ jobs:
             targeting .NET 10. Unzip anywhere and run `SimpleDnsCryptPlus.exe` as administrator.
 
             ### Verify before running
-            Each zip is accompanied by a detached minisign signature made with the release key
-            published in this repository as `tools/keys/update.pub`:
+            Each zip is accompanied by a detached minisign signature. The key that verifies it is not
+            inside the zip - it is `tools/keys/update.pub` in this repository - so fetch it from the
+            tag you downloaded from, then verify. Needs the minisign CLI:
 
             ```
+            Invoke-WebRequest `
+              "https://raw.githubusercontent.com/${{ github.repository }}/refs/tags/${{ github.ref_name }}/tools/keys/update.pub" `
+              -OutFile update.pub
             minisign -Vm .\SimpleDNSCryptPlus-x64-${{ needs.build.outputs.version }}-portable.zip `
               -x .\SimpleDNSCryptPlus-x64-${{ needs.build.outputs.version }}-portable.zip.minisig `
               -p .\update.pub

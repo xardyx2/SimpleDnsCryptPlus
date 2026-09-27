@@ -1,6 +1,7 @@
 ﻿[![license](https://img.shields.io/github/license/xardyx2/SimpleDnsCryptPlus.svg?style=flat-square)](LICENSE.md)
-[![release](https://img.shields.io/github/v/release/xardyx2/SimpleDnsCryptPlus.svg?style=flat-square)](https://github.com/xardyx2/SimpleDnsCryptPlus/releases/latest)
-[![dnscrypt-proxy](https://img.shields.io/badge/dnscrypt--proxy-2.1.5-orange.svg?style=flat-square)](https://github.com/DNSCrypt/dnscrypt-proxy)
+[![CI](https://github.com/xardyx2/SimpleDnsCryptPlus/actions/workflows/ci.yml/badge.svg)](https://github.com/xardyx2/SimpleDnsCryptPlus/actions/workflows/ci.yml)
+[![release](https://img.shields.io/github/v/release/xardyx2/SimpleDnsCryptPlus.svg?style=flat-square&include_prereleases)](https://github.com/xardyx2/SimpleDnsCryptPlus/releases)
+[![dnscrypt-proxy](https://img.shields.io/badge/dnscrypt--proxy-2.1.18-orange.svg?style=flat-square)](https://github.com/DNSCrypt/dnscrypt-proxy)
 
 # Simple DNSCrypt Plus
 
@@ -18,12 +19,12 @@ A simple management tool to configure [dnscrypt-proxy](https://github.com/DNSCry
 
 ## Why this fork
 
-| | [upstream](https://github.com/DNSCrypt/SimpleDnsCrypt) | [instantsc](https://github.com/instantsc/SimpleDnsCrypt) | this fork (today → target) |
+| | [upstream](https://github.com/DNSCrypt/SimpleDnsCrypt) | [instantsc](https://github.com/instantsc/SimpleDnsCrypt) | this fork (now) |
 |---|---|---|---|
-| Last release | 0.7.1 — Apr 2020 | 0.8.2 — Nov 2023 | none yet → `0.9.0-rc.1` |
-| Target framework | .NET Framework 4.8 | .NET 8 | .NET 8 → **.NET 10** |
-| CI actually running | none in repo (AppVeyor lived on the author's personal account) | workflow committed, **never executed once** | none yet → GitHub Actions, release-gating |
-| Bundled dnscrypt-proxy | 2.1.15 | 2.1.5 | 2.1.5 → **2.1.18**, fetched at build time with pinned SHA-256 |
+| Last release | 0.7.1 — Apr 2020 | 0.8.2 — Nov 2023 | `0.9.0-rc.1` — Sep 2026, prerelease; no stable yet |
+| Target framework | .NET Framework 4.8 | .NET 8 | .NET 10 (`net10.0-windows10.0.19041`) |
+| CI actually running | none in repo (AppVeyor lived on the author's personal account) | workflow committed, **never executed once** | GitHub Actions — `ci.yml` on every push, `release.yml` gated on a tag |
+| Bundled dnscrypt-proxy | 2.1.15 | 2.1.5 | **2.1.18**, fetched at build time with pinned SHA-256 |
 | Installer | MSI, source **not in repo** | MSI via WiX v3, unsigned | portable zip + minisign (MSI deferred) |
 
 Both predecessors did real work and are credited in [NOTICE.md](NOTICE.md) and
@@ -68,15 +69,30 @@ Portable, self-contained (no .NET installation needed):
 - `SimpleDNSCryptPlus-x64-<version>-portable.zip`
 - `SimpleDNSCryptPlus-x86-<version>-portable.zip`
 
-Grab them from [Releases](https://github.com/xardyx2/SimpleDnsCryptPlus/releases/latest).
-Each release carries `SHA256SUMS.txt` and a `.zip.minisig`. Verify with:
+`<version>` carries the prerelease suffix while the project is pre-`1.0.0`; the current build is
+`SimpleDNSCryptPlus-x64-0.9.0-rc.1-portable.zip`.
+
+Grab them from [Releases](https://github.com/xardyx2/SimpleDnsCryptPlus/releases). Note that
+`/releases/latest` is empty until a stable release exists, and that is deliberate: a candidate must
+never reach an installed copy as an automatic update offer.
+
+Each release carries `SHA256SUMS.txt` and one `.zip.minisig` per archive. The public key is **not**
+inside the zip — it is published in this repository, so fetch it from the tag you downloaded from,
+then verify. This needs the [minisign](https://github.com/jedisct1/minisign) CLI:
 
 ```powershell
-Get-FileHash .\SimpleDNSCryptPlus-x64-0.9.0-portable.zip -Algorithm SHA256
-minisign -Vm .\SimpleDNSCryptPlus-x64-0.9.0-portable.zip `
-  -x .\SimpleDNSCryptPlus-x64-0.9.0-portable.zip.minisig `
-  -p .\update.pub
+$tag = 'v0.9.0-rc.1'
+Invoke-WebRequest `
+  "https://raw.githubusercontent.com/xardyx2/SimpleDnsCryptPlus/refs/tags/$tag/tools/keys/update.pub" `
+  -OutFile update.pub
+
+$zip = 'SimpleDNSCryptPlus-x64-0.9.0-rc.1-portable.zip'
+Get-FileHash ".\$zip" -Algorithm SHA256
+minisign -Vm ".\$zip" -x ".\$zip.minisig" -p .\update.pub
 ```
+
+`Get-FileHash` prints uppercase; the release's `SHA256SUMS.txt` is lowercase. The two are equal
+once you ignore case, and `minisign` must print `Good Signature` against the key above.
 
 Unzip anywhere you like, run `SimpleDnsCryptPlus.exe` as administrator. To remove the service,
 run `Uninstall.exe` from the same folder (or uninstall the service from inside the app).

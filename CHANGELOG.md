@@ -10,7 +10,19 @@ their respective repositories for authoritative histories.
 
 ## [Unreleased]
 
-Nothing has landed since the release candidate below.
+### Fixed
+- The README still described the pre-candidate state of the fork: its dnscrypt-proxy badge read
+  2.1.5 while `tools/dnscrypt-proxy.lock.json` pins 2.1.18, its release badge resolved to
+  "no releases or repo not found" because the only published release is a prerelease, and the
+  comparison table listed `.NET 10` and a running CI pipeline as work still to come. All three
+  have shipped.
+- The published verification command no longer fails on copy-paste. `update.pub` is not inside the
+  portable zip — `build/build-portable.ps1` archives only the publish folder — so the snippet now
+  fetches the key from the release tag first, and the archive names carry the real `-rc.1` suffix.
+  `releases/latest` is left empty on purpose until a stable release exists, so the download links
+  now point at the release list.
+- `Tests/ReleaseDocConsistencyTests.cs` pins the README's proxy badge to the lock file, so the
+  version claim cannot go stale in silence again.
 
 ## [0.9.0-rc.1] - 2026-09-27
 
