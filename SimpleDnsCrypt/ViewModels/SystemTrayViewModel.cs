@@ -1,54 +1,78 @@
-﻿using Caliburn.Micro;
+﻿using System;
+using System.Reactive.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Caliburn.Micro;
 using System.Windows;
+using System.Windows.Input;
+using ReactiveUI;
 
 namespace SimpleDnsCrypt.ViewModels
 {
-	public class SystemTrayViewModel : Screen
-	{
-		private readonly IWindowManager _windowManager;
-		private readonly MainViewModel _mainViewModel;
-		private readonly IEventAggregator _events;
+    public class SystemTrayViewModel : Screen
+    {
+        private readonly IWindowManager _windowManager;
+        private readonly MainViewModel _mainViewModel;
+        private readonly IEventAggregator _events;
 
-		public SystemTrayViewModel(IWindowManager windowManager, IEventAggregator events, MainViewModel mainViewModel)
-		{
-			_windowManager = windowManager;
-			_events = events;
-			_mainViewModel = mainViewModel;
-		}
+        public SystemTrayViewModel(IWindowManager windowManager, IEventAggregator events, MainViewModel mainViewModel)
+        {
+            _windowManager = windowManager;
+            _events = events;
+            _mainViewModel = mainViewModel;
+            ShowWindowCommand = ReactiveCommand.Create(ShowWindow);
+            ToggleWindowStateCommand = ReactiveCommand.Create(ToggleWindowState);
+            ExitApplicationCommand = ReactiveCommand.Create(() => Application.Current.Shutdown());
+        }
 
-		protected override void OnActivate()
-		{
-			base.OnActivate();
+        public ICommand ExitApplicationCommand { get; }
 
-			NotifyOfPropertyChange(() => CanShowWindow);
-			NotifyOfPropertyChange(() => CanHideWindow);
-		}
+        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
+        {
+            await base.OnActivateAsync(cancellationToken);
+            _mainViewModel.ObservableForProperty(x => x.IsActive).TakeWhile(_ => IsActive).Do(_ => RefreshState()).Subscribe();
+            RefreshState();
+        }
 
-		public void ShowWindow()
-		{
-			if (!_mainViewModel.IsActive)
-			{
-				_windowManager.ShowWindow(_mainViewModel);
-			}
-			NotifyOfPropertyChange(() => CanShowWindow);
-			NotifyOfPropertyChange(() => CanHideWindow);
-		}
+        public ICommand ToggleWindowStateCommand { get; }
 
-		public bool CanShowWindow => !_mainViewModel.IsActive;
+        private void ToggleWindowState()
+        {
+            if (_mainViewModel.IsActive)
+            {
+                HideWindow();
+            }
+            else
+            {
+                ShowWindow();
+            }
+        }
 
-		public void HideWindow()
-		{
-			_mainViewModel.TryClose();
+        public ICommand ShowWindowCommand { get; }
 
-			NotifyOfPropertyChange(() => CanShowWindow);
-			NotifyOfPropertyChange(() => CanHideWindow);
-		}
+        private void ShowWindow()
+        {
+            if (!_mainViewModel.IsActive)
+            {
+                _windowManager.ShowWindowAsync(_mainViewModel);
+            }
 
-		public bool CanHideWindow => _mainViewModel.IsActive;
+            RefreshState();
+        }
 
-		public void ExitApplication()
-		{
-			Application.Current.Shutdown();
-		}
-	}
+        public void HideWindow()
+        {
+            _mainViewModel.TryCloseAsync();
+            RefreshState();
+        }
+
+        private void RefreshState()
+        {
+            NotifyOfPropertyChange(() => CanShowWindow);
+            NotifyOfPropertyChange(() => CanHideWindow);
+        }
+
+        public bool CanShowWindow => !_mainViewModel.IsActive;
+        public bool CanHideWindow => _mainViewModel.IsActive;
+    }
 }

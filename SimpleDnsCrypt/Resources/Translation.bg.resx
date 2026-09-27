@@ -513,7 +513,7 @@
     <value>Обикновен некриптиран DNS сървър, който ще се използва само за единични заявки при извличане на първоначалния списък със сървъри и само ако системната DNS конфигурация не работи. За хората в Китай може да е необходимо да използват 114.114.114.114:53</value>
   </data>
   <data name="trayicon_tooltip" xml:space="preserve">
-    <value>Simple DNSCrypt</value>
+    <value>Simple DNSCrypt Plus</value>
   </data>
   <data name="trayicon_exit" xml:space="preserve">
     <value>Изход</value>
@@ -543,7 +543,7 @@
     <value>Намаляване в системната област при затваряне</value>
   </data>
   <data name="settings_start_in_tray" xml:space="preserve">
-    <value>Стартиране на Simple DNSCrypt в системната област</value>
+    <value>Стартиране на Simple DNSCrypt Plus в системната област</value>
   </data>
   <data name="settings_update_silent" xml:space="preserve">
     <value>Тихо инсталиране на нови версии</value>

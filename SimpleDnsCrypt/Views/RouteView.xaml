@@ -6,12 +6,12 @@
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:dd="urn:gong-wpf-dragdrop"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d"
              Height="Auto" Width="650"
              lex:LocalizeDictionary.DesignCulture="en"
-             lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCrypt"
+             lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCryptPlus"
              lex:ResxLocalizationProvider.DefaultDictionary="Translation">
     <Grid Background="#198AB328">
         <Border BorderThickness="1" Grid.Row="0" Grid.Column="0" Background="#198AB328" Margin="10" Padding="10">

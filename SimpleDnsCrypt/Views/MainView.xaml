@@ -7,10 +7,16 @@
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:converters="clr-namespace:SimpleDnsCrypt.Converters"
              xmlns:customControls="clr-namespace:SimpleDnsCrypt.Controls"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors" 
+             xmlns:models="clr-namespace:SimpleDnsCrypt.Models"
+             xmlns:viewmodels="clr-namespace:SimpleDnsCrypt.ViewModels" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
              lex:LocalizeDictionary.DesignCulture="en"
              lex:LocalizeDictionary.OutputMissingKeys="False"
-             lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCrypt"
+             lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCryptPlus"
              lex:ResxLocalizationProvider.DefaultDictionary="Translation">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -22,6 +28,7 @@
             <converters:InUseToBackgroundConverter x:Key="InUseToBackgroundConverter" />
             <converters:TextLengthToFontSizeConverter x:Key="TextLengthToFontSizeConverter" />
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
             <converters:BoolToVisibilityCollapsedConverter x:Key="BoolToVisibilityCollapsedConverter" />
             <converters:ReverseBoolToEnabledConverter x:Key="ReverseBoolToEnabledConverter" />
             <converters:QueryLogTypeToColorConverter x:Key="QueryLogTypeToColorConverter" />
@@ -34,7 +41,6 @@
             <converters:IntegerToBoolConverter x:Key="IntegerToBoolConverter" />
             <converters:IntegerToVisibilityConverter x:Key="IntegerToVisibilityConverter" />
             <converters:HeightConverter x:Key="HeightConverter" />
-            <converters:UninstallToEnableConverter x:Key="UninstallToEnableConverter" />
             <converters:ProtocolToVisibilityConverter x:Key="ProtocolToVisibilityConverter" />
             <converters:RouteStateToColorConverter x:Key="RouteStateToColorConverter" />
         </ResourceDictionary>
@@ -185,77 +191,76 @@
                                         </DrawingBrush>
                                     </Border.BorderBrush>
                                     <StackPanel Orientation="Vertical">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <iconPacks:PackIconMaterial Grid.Column="0" Grid.Row="0" Height="20"
+                                        <StackPanel Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial Height="20"
                                                                         Width="20" Kind="Flash" Opacity="0.7"
                                                                         Foreground="#FF8ab329"
                                                                         HorizontalAlignment="Left"
                                                                         VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="1" Grid.Row="0"
-                                                       Text="{lex:Loc Key=default_settings_service_header}"
+                                            <TextBlock Text="{lex:Loc Key=default_settings_service_header}"
                                                        TextWrapping="Wrap" VerticalAlignment="Center"
                                                        Foreground="#FF8ab329" FontSize="20"
                                                        Opacity="0.7" Margin="5,0,0,3" FontWeight="Bold">
                                             </TextBlock>
-                                        </Grid>
+                                        </StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="250" />
-                                                <ColumnDefinition Width="350" />
                                                 <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="35" />
-                                                <RowDefinition Height="40" />
+                                                <RowDefinition Height="45" />
                                             </Grid.RowDefinitions>
-                                            <Label Foreground="#FF575757" Grid.Row="0" Grid.Column="0"
+                                            <Label Grid.Row="0" Grid.Column="0"
+                                                    Foreground="#FF575757" DockPanel.Dock="Left"
                                                    Content="{lex:Loc Key=default_settings_service}"
                                                    VerticalAlignment="Bottom"
                                                    HorizontalAlignment="Left" Margin="0,0,0,5">
                                             </Label>
-                                            <controls:MetroProgressBar IsIndeterminate="True" Grid.Row="0"
-                                                                       Grid.Column="1"
-                                                                       Visibility="{Binding IsWorkingOnService, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                                       Width="250"
-                                                                       Foreground="{DynamicResource AccentColorBrush}"
-                                                                       Margin="0" HorizontalAlignment="Center"
-                                                                       VerticalAlignment="Center" />
-                                            <controls:ToggleSwitchButton
+                                            <controls:MetroProgressBar
+                                                Grid.Row="0" Grid.Column="1"
+                                                IsIndeterminate="True" DockPanel.Dock="Right"
+                                                Visibility="{Binding IsWorkingOnService, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                Width="250"
+                                                Foreground="{DynamicResource MahApps.Brushes.Accent}"
+                                                Margin="0" HorizontalAlignment="Center"
+                                                VerticalAlignment="Center" />
+                                            <Button Grid.Row="0" Grid.Column="2"
+                                                    Style="{DynamicResource CustomAccentedSquareButtonStyle}"
+                                                    Content="Install"
+                                                    HorizontalAlignment="Left"
+                                                    Visibility="{Binding IsServiceInstalled, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}"
+                                                    Command="{Binding InstallServiceCommand}"/>
+                                            <controls:ToggleSwitch
+                                                Grid.Row="0" Grid.Column="2"
                                                 IsEnabled="{Binding IsWorkingOnService, Converter={StaticResource ReverseBoolToEnabledConverter}}"
-                                                Grid.Row="0" Grid.Column="2" Cursor="Hand"
-                                                IsChecked="{Binding IsResolverRunning}"
-                                                HorizontalAlignment="Right" VerticalAlignment="Top">
-                                            </controls:ToggleSwitchButton>
+                                                Visibility="{Binding IsServiceInstalled, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}"
+                                                DockPanel.Dock="Right" Cursor="Hand"
+                                                IsOn="{Binding IsResolverRunning}">
+                                            </controls:ToggleSwitch>
 
                                             <Label Foreground="#FF575757" Grid.Row="1" Grid.Column="0"
                                                    Content="{lex:Loc Key=advanced_settings_uninstall_text}"
                                                    VerticalAlignment="Bottom"
-                                                   HorizontalAlignment="Left" Margin="0,0,0,5">
+                                                   HorizontalAlignment="Left" Margin="0,0,0,5"
+                                                   Visibility="{Binding IsServiceInstalled, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                                             </Label>
                                             <controls:MetroProgressBar IsIndeterminate="True" Grid.Row="1" Grid.Column="1"
-                                                                       Visibility="{Binding IsUninstallingService, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                                       Width="250" Foreground="{DynamicResource AccentColorBrush}"
-                                                                       HorizontalAlignment="Center" Margin="50,14,50,15"
-                                                                       VerticalAlignment="Center" />
-                                            <Button x:Name="UninstallService" Grid.Row="1" Grid.Column="2"
+                                                                       Width="250" Foreground="{DynamicResource MahApps.Brushes.Accent}"
+                                                                       HorizontalAlignment="Center"
+                                                                       Margin="50,14,50,15"
+                                                                       VerticalAlignment="Center"
+                                                                       Visibility="{Binding IsUninstallingService, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                            <Button Grid.Row="1" Grid.Column="2"
                                                     Style="{DynamicResource CustomAccentedSquareButtonStyle}"
-                                                    Margin="0,10,0,0" HorizontalAlignment="Right"
+                                                    Margin="0,10,0,0" HorizontalAlignment="Left"
                                                     Content="{lex:Loc Key=advanced_settings_uninstall_button}"
-                                                    Cursor="Hand">
-                                                <Button.IsEnabled>
-                                                    <MultiBinding
-                                                        Converter="{StaticResource UninstallToEnableConverter}">
-                                                        <Binding Path="IsUninstallingService" />
-                                                        <Binding Path="IsServiceInstalled" />
-                                                    </MultiBinding>
-                                                </Button.IsEnabled>
-                                            </Button>
-
+                                                    Cursor="Hand" 
+                                                    Command="{Binding UninstallServiceCommand}"
+                                                    Visibility="{Binding IsServiceInstalled, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}"
+                                                     />
                                         </Grid>
                                     </StackPanel>
                                 </Border>
@@ -297,11 +302,11 @@
                                                        Foreground="#FF8ab329" FontSize="20"
                                                        Opacity="0.7" Margin="5,0,0,3" FontWeight="Bold">
                                             </TextBlock>
-                                            <controls:ToggleSwitch Cursor="Hand" IsChecked="{Binding ShowHiddenCards}"
+                                            <controls:ToggleSwitch Cursor="Hand" IsOn="{Binding ShowHiddenCards}"
                                                                    Foreground="#FF575757" Grid.Column="2" Grid.Row="0"
                                                                    HorizontalAlignment="Right"
-                                                                   OffLabel="{lex:Loc Key=default_settings_show_hidden_cards}"
-                                                                   OnLabel="{lex:Loc Key=default_settings_show_hidden_cards}">
+                                                                   OffContent="{lex:Loc Key=default_settings_show_hidden_cards}"
+                                                                   OnContent="{lex:Loc Key=default_settings_show_hidden_cards}">
                                             </controls:ToggleSwitch>
                                         </Grid>
                                         <ItemsControl ItemsSource="{Binding LocalNetworkInterfaces}">
@@ -312,36 +317,41 @@
                                             </ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <controls:Tile Cursor="Hand" Title="{Binding Name}"
+                                                    <controls:Tile Cursor="Hand" Title="{Binding Name, Mode=OneWay}"
                                                                    cal:Message.Attach="[Event Click] = [Action NetworkCardClicked($dataContext)]"
-                                                                   TitleFontSize="{Binding Name, Converter={StaticResource TextLengthToFontSizeConverter}}"
+                                                                   TitleFontSize="{Binding Name, Mode=OneWay, Converter={StaticResource TextLengthToFontSizeConverter}}"
                                                                    ToolTip="{Binding Description}" Foreground="#FFFFFF"
                                                                    Background="{Binding Converter={StaticResource InUseToBackgroundConverter}}"
                                                                    TiltFactor="1" Width="Auto" Height="100"
                                                                    HorizontalAlignment="Left">
-                                                        <Grid Margin="15,0,0,0">
+                                                        <Grid Height="100">
                                                             <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="150" />
-                                                                <ColumnDefinition Width="20" />
+                                                                <ColumnDefinition Width="140" />
+                                                                <ColumnDefinition Width="30" />
                                                             </Grid.ColumnDefinitions>
                                                             <Grid.RowDefinitions>
                                                                 <RowDefinition Height="*" />
                                                             </Grid.RowDefinitions>
-                                                            <iconPacks:PackIconMaterial HorizontalAlignment="Center"
-                                                                                        VerticalAlignment="Center"
-                                                                                        Grid.Column="0" Grid.Row="0"
-                                                                                        Kind="{Binding Converter={StaticResource InterfaceTypeToIconConverter}}"
-                                                                                        Foreground="#FFFFFF" Width="48"
-                                                                                        Height="48"
-                                                                                        Margin="15,0,0,0" />
-                                                            <iconPacks:PackIconMaterial Grid.Column="1" Grid.Row="0"
-                                                                                        Kind="Check"
-                                                                                        Width="16" Height="16"
-                                                                                        VerticalAlignment="Top"
-                                                                                        HorizontalAlignment="Right"
-                                                                                        Margin="0,-20,7,0"
-                                                                                        Foreground="#FFFFFF"
-                                                                                        Visibility="{Binding UseDnsCrypt, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                            <iconPacks:PackIconMaterial Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"
+                                                                Kind="{Binding Converter={StaticResource InterfaceTypeToIconConverter}}"
+                                                                Foreground="#FFFFFF"
+                                                                Width="40"
+                                                                Height="40" />
+                                                            <iconPacks:PackIconMaterial Grid.Row="0" Grid.Column="1"
+                                                                VerticalAlignment="Top"
+                                                                Kind="Check"
+                                                                Width="16" Height="16"
+                                                                Margin="7"
+                                                                Foreground="#FFFFFF"
+                                                                Visibility="{Binding UseDnsCrypt, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                                                       Foreground="White"
+                                                                       Text="{Binding IpAddresses}"
+                                                                       Margin="3"
+                                                                       TextTrimming="CharacterEllipsis">
+                                                            </TextBlock>
                                                         </Grid>
                                                     </controls:Tile>
                                                 </DataTemplate>
@@ -356,224 +366,253 @@
                 <TabItem Padding="10,2,10,2" Height="39" VerticalAlignment="Top" Tag="resolverTab"
                              Header="{lex:Loc Key=tabitem_resolvers}">
                     <TabItem.Content>
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <DockPanel Margin="0,10,0,0">
-                                <Border BorderThickness="1" Background="#198AB328" Padding="10" Margin="0,14,0,0"
-                                        DockPanel.Dock="Top"
-                                        IsEnabled="{Binding IsSavingConfiguration, Converter={StaticResource ReverseBoolToEnabledConverter}}">
-                                    <Border.BorderBrush>
-                                        <DrawingBrush Viewport="0,0,8,8" ViewportUnits="Absolute" TileMode="Tile"
-                                                      Opacity="0.4">
-                                            <DrawingBrush.Drawing>
-                                                <DrawingGroup>
-                                                    <GeometryDrawing Brush="#FF8ab329">
-                                                        <GeometryDrawing.Geometry>
-                                                            <GeometryGroup>
-                                                                <RectangleGeometry Rect="0,0,50,50" />
-                                                                <RectangleGeometry Rect="50,50,50,50" />
-                                                            </GeometryGroup>
-                                                        </GeometryDrawing.Geometry>
-                                                    </GeometryDrawing>
-                                                </DrawingGroup>
-                                            </DrawingBrush.Drawing>
-                                        </DrawingBrush>
-                                    </Border.BorderBrush>
-                                    <StackPanel Orientation="Vertical">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <iconPacks:PackIconMaterial Grid.Column="0" Grid.Row="0" Height="20"
-                                                                        Width="20" Kind="AutoFix" Opacity="0.7"
-                                                                        Foreground="#FF8ab329"
-                                                                        HorizontalAlignment="Left"
-                                                                        VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="1" Grid.Row="0"
-                                                       Text="{lex:Loc Key=resolvers_dnscrypt_mode_header}"
+                        <DockPanel Margin="0,10,0,0">
+                            <Border BorderThickness="1" Background="#198AB328" Padding="10" Margin="0,14,0,0"
+                                    DockPanel.Dock="Top"
+                                    IsEnabled="{Binding IsSavingConfiguration, Converter={StaticResource ReverseBoolToEnabledConverter}}">
+                                <Border.BorderBrush>
+                                    <DrawingBrush Viewport="0,0,8,8" ViewportUnits="Absolute" TileMode="Tile"
+                                                  Opacity="0.4">
+                                        <DrawingBrush.Drawing>
+                                            <DrawingGroup>
+                                                <GeometryDrawing Brush="#FF8ab329">
+                                                    <GeometryDrawing.Geometry>
+                                                        <GeometryGroup>
+                                                            <RectangleGeometry Rect="0,0,50,50" />
+                                                            <RectangleGeometry Rect="50,50,50,50" />
+                                                        </GeometryGroup>
+                                                    </GeometryDrawing.Geometry>
+                                                </GeometryDrawing>
+                                            </DrawingGroup>
+                                        </DrawingBrush.Drawing>
+                                    </DrawingBrush>
+                                </Border.BorderBrush>
+                                <StackPanel Orientation="Vertical">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <iconPacks:PackIconMaterial Grid.Column="0" Grid.Row="0" Height="20"
+                                                                    Width="20" Kind="AutoFix" Opacity="0.7"
+                                                                    Foreground="#FF8ab329"
+                                                                    HorizontalAlignment="Left"
+                                                                    VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Grid.Row="0"
+                                                   Text="{lex:Loc Key=resolvers_dnscrypt_mode_header}"
+                                                   TextWrapping="Wrap" VerticalAlignment="Center"
+                                                   Foreground="#FF8ab329" FontSize="20"
+                                                   Opacity="0.7" Margin="5,0,0,3" FontWeight="Bold" />
+                                    </Grid>
+                                    <TextBlock Foreground="#FF575757" Margin="0,5,0,0"
+                                               Text="{lex:Loc Key=resolvers_dnscrypt_mode_description}" />
+                                    <controls:ToggleSwitch Foreground="#FF575757" Cursor="Hand"
+                                                           IsOn="{Binding IsDnsCryptAutomaticModeEnabled}"
+                                                           OnContent="{lex:Loc Key=enabled}"
+                                                           OffContent="{lex:Loc Key=disabled}"
+                                                           Header="{lex:Loc Key=resolvers_dnscrypt_automatic_mode}"
+                                                           Margin="0,5,0,0" />
+                                </StackPanel>
+                            </Border>
+                            <Border BorderThickness="1" Background="#198AB328" Padding="10" Margin="0,14,0,0"
+                                    DockPanel.Dock="Bottom"
+                                    IsEnabled="{Binding IsSavingConfiguration, Converter={StaticResource ReverseBoolToEnabledConverter}}">
+                                <Border.BorderBrush>
+                                    <DrawingBrush Viewport="0,0,8,8" ViewportUnits="Absolute" TileMode="Tile"
+                                                  Opacity="0.4">
+                                        <DrawingBrush.Drawing>
+                                            <DrawingGroup>
+                                                <GeometryDrawing Brush="#FF8ab329">
+                                                    <GeometryDrawing.Geometry>
+                                                        <GeometryGroup>
+                                                            <RectangleGeometry Rect="0,0,50,50" />
+                                                            <RectangleGeometry Rect="50,50,50,50" />
+                                                        </GeometryGroup>
+                                                    </GeometryDrawing.Geometry>
+                                                </GeometryDrawing>
+                                            </DrawingGroup>
+                                        </DrawingBrush.Drawing>
+                                    </DrawingBrush>
+                                </Border.BorderBrush>
+                                <StackPanel Orientation="Vertical">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <iconPacks:PackIconMaterial Grid.Column="0" Grid.Row="0" Height="20"
+                                                                    Width="20" Kind="Dns" Opacity="0.7"
+                                                                    Foreground="#FF8ab329"
+                                                                    HorizontalAlignment="Left"
+                                                                    VerticalAlignment="Center" />
+                                        <DockPanel Grid.Column="1" Grid.Row="0"
+                                                   Margin="5,0,0,3">
+                                            <TextBlock DockPanel.Dock="Left"
+                                                       Text="{lex:Loc Key=resolvers_available_resolvers_header}"
                                                        TextWrapping="Wrap" VerticalAlignment="Center"
                                                        Foreground="#FF8ab329" FontSize="20"
-                                                       Opacity="0.7" Margin="5,0,0,3" FontWeight="Bold">
-                                            </TextBlock>
-                                        </Grid>
-                                        <TextBlock Foreground="#FF575757" Margin="0,5,0,0"
-                                                   Text="{lex:Loc Key=resolvers_dnscrypt_mode_description}" />
-                                        <controls:ToggleSwitch Foreground="#FF575757" Cursor="Hand"
-                                                               IsChecked="{Binding IsDnsCryptAutomaticModeEnabled}"
-                                                               OnLabel="{lex:Loc Key=enabled}"
-                                                               OffLabel="{lex:Loc Key=disabled}"
-                                                               Header="{lex:Loc Key=resolvers_dnscrypt_automatic_mode}"
-                                                               Margin="0,5,0,0" />
-                                    </StackPanel>
-                                </Border>
-                                <Border BorderThickness="1" Background="#198AB328" Padding="10" Margin="0,14,0,0"
-                                        DockPanel.Dock="Bottom"
-                                        IsEnabled="{Binding IsSavingConfiguration, Converter={StaticResource ReverseBoolToEnabledConverter}}">
-                                    <Border.BorderBrush>
-                                        <DrawingBrush Viewport="0,0,8,8" ViewportUnits="Absolute" TileMode="Tile"
-                                                      Opacity="0.4">
-                                            <DrawingBrush.Drawing>
-                                                <DrawingGroup>
-                                                    <GeometryDrawing Brush="#FF8ab329">
-                                                        <GeometryDrawing.Geometry>
-                                                            <GeometryGroup>
-                                                                <RectangleGeometry Rect="0,0,50,50" />
-                                                                <RectangleGeometry Rect="50,50,50,50" />
-                                                            </GeometryGroup>
-                                                        </GeometryDrawing.Geometry>
-                                                    </GeometryDrawing>
-                                                </DrawingGroup>
-                                            </DrawingBrush.Drawing>
-                                        </DrawingBrush>
-                                    </Border.BorderBrush>
-                                    <StackPanel Orientation="Vertical">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <iconPacks:PackIconMaterial Grid.Column="0" Grid.Row="0" Height="20"
-                                                                        Width="20" Kind="Dns" Opacity="0.7"
-                                                                        Foreground="#FF8ab329"
-                                                                        HorizontalAlignment="Left"
-                                                                        VerticalAlignment="Center" />
-                                            <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="0"
-                                                        Margin="5,0,0,3">
-                                                <TextBlock Text="{lex:Loc Key=resolvers_available_resolvers_header}"
-                                                           TextWrapping="Wrap" VerticalAlignment="Center"
-                                                           Foreground="#FF8ab329" FontSize="20"
-                                                           Opacity="0.7" FontWeight="Bold">
-                                                </TextBlock>
-                                                <TextBlock Text="{Binding Resolvers.Count, StringFormat={}({0})}"
-                                                           TextWrapping="Wrap" VerticalAlignment="Center"
-                                                           Foreground="#FF8ab329" FontSize="20"
-                                                           Opacity="0.7" FontWeight="Bold" Margin="5,0,0,0">
-                                                </TextBlock>
-                                            </StackPanel>
-                                            <Button x:Name="SaveLocalServers" Grid.Column="2" Grid.Row="0"
+                                                       Opacity="0.7" FontWeight="Bold" />
+                                            <TextBlock DockPanel.Dock="Left"
+                                                       Text="{Binding Resolvers.Count, StringFormat={}({0})}"
+                                                       TextWrapping="Wrap" VerticalAlignment="Center"
+                                                       Foreground="#FF8ab329" FontSize="20"
+                                                       Opacity="0.7" FontWeight="Bold" Margin="5,0,0,0" />
+                                            <Button DockPanel.Dock="Right"
+                                                    Command="{Binding SaveLocalServersCommand}"
                                                     Cursor="Hand"
                                                     IsEnabled="{Binding Resolvers.Count, Converter={StaticResource IntegerToBoolConverter}}"
                                                     Content="{lex:Loc Key=default_settings_apply_settings}"
                                                     Width="Auto" HorizontalAlignment="Right"
                                                     Style="{DynamicResource CustomAccentedSquareButtonStyle}" />
-                                        </Grid>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock VerticalAlignment="Center"
-                                                       Text="{lex:Loc Key=default_settings_configuration_dnssec}"
-                                                       Foreground="#FF575757" Margin="5,5,0,2" />
-                                            <TextBlock VerticalAlignment="Center"
-                                                       Text="{Binding DnscryptProxyConfiguration.require_dnssec, Converter={StaticResource BoolToTextConverter}}"
-                                                       FontWeight="Bold"
-                                                       Foreground="{Binding DnscryptProxyConfiguration.require_dnssec,Converter={StaticResource BoolToForegroundConverter}}"
-                                                       Margin="5,5,0,2" />
-                                            <TextBlock VerticalAlignment="Center" Foreground="#FF575757"
-                                                       Margin="5,5,0,2">
-                                                |
-                                            </TextBlock>
-                                            <TextBlock VerticalAlignment="Center"
-                                                       Text="{lex:Loc Key=default_settings_configuration_nolog}"
-                                                       Foreground="#FF575757" Margin="5,5,0,2" />
-                                            <TextBlock VerticalAlignment="Center" FontWeight="Bold"
-                                                       Margin="5,5,0,2"
-                                                       Text="{Binding DnscryptProxyConfiguration.require_nolog, Converter={StaticResource BoolToTextConverter}}"
-                                                       Foreground="{Binding DnscryptProxyConfiguration.require_nolog,Converter={StaticResource BoolToForegroundConverter}}" />
-                                            <TextBlock VerticalAlignment="Center" Foreground="#FF575757"
-                                                       Margin="5,5,0,2">
-                                                |
-                                            </TextBlock>
-                                            <TextBlock VerticalAlignment="Center"
-                                                       Text="{lex:Loc Key=default_settings_configuration_nofilter}"
-                                                       Foreground="#FF575757" Margin="5,5,0,2" />
-                                            <TextBlock VerticalAlignment="Center" FontWeight="Bold"
-                                                       Text="{Binding DnscryptProxyConfiguration.require_nofilter, Converter={StaticResource BoolToTextConverter}}"
-                                                       Foreground="{Binding DnscryptProxyConfiguration.require_nofilter,Converter={StaticResource BoolToForegroundConverter}}"
-                                                       Margin="5,5,0,2" />
-                                        </StackPanel>
-                                        <Grid>
-                                            <Grid.RowDefinitions >
-                                                <RowDefinition Height="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=ActualHeight, Converter={StaticResource HeightConverter}, ConverterParameter='Resolvers'}"/>
-                                            </Grid.RowDefinitions>
-                                            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,5,0,0">
-                                                <ItemsControl ItemsSource="{Binding Resolvers}" IsEnabled="True"
-                                                              Margin="0">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <UniformGrid Columns="3" />
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Border BorderThickness="0.2" Background="White"
-                                                                    Padding="1">
-                                                                <Grid Cursor="Hand"
-                                                                      cal:Message.Attach="[Event MouseLeftButtonDown] = [Action ResolverClicked($dataContext)]"
-                                                                      Background="{Binding IsInServerList, Converter={StaticResource ServerListBackgroundConverter}}"
-                                                                      ToolTip="{Binding ToolTip}">
-                                                                    <Grid.RowDefinitions>
-                                                                        <RowDefinition />
-                                                                        <RowDefinition />
-                                                                    </Grid.RowDefinitions>
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="30"/>
-                                                                        <ColumnDefinition Width="*"/>
-                                                                    </Grid.ColumnDefinitions>
-                                                                    <TextBlock  Foreground="White"
-                                                                               Margin="5,2" Grid.Row="0" Grid.Column="1"
-                                                                               Text="{Binding DisplayName}" HorizontalAlignment="Right" />
-                                                                    <Button Grid.Row="0" Grid.Column="0"
-                                                                            Visibility="{Binding Protocol, Converter={StaticResource ProtocolToVisibilityConverter}}"
-                                                                            Background="White"
-                                                                            Width="20"
-                                                                            Height="20"
-                                                                            Cursor="Hand"
-                                                                            HorizontalContentAlignment="Center"
-                                                                            VerticalContentAlignment="Center"
-                                                                            BorderBrush="{Binding RouteState, Converter={StaticResource RouteStateToColorConverter}}"
-                                                                            FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
-                                                                            Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
-                                                                            Margin="5,2,0,2" HorizontalAlignment="Left" VerticalAlignment="Top">
-                                                                        <iconPacks:PackIconMaterial
-                                                                            Kind="Shuffle"
-                                                                            Width="10"
-                                                                            Height="10"
-                                                                            HorizontalContentAlignment="Center"
-                                                                            VerticalContentAlignment="Center" >
-                                                                            <iconPacks:PackIconMaterial.Foreground>
-                                                                                <SolidColorBrush Color="{Binding RouteState, Converter={StaticResource RouteStateToColorConverter}}"/>
-                                                                            </iconPacks:PackIconMaterial.Foreground>
-                                                                        </iconPacks:PackIconMaterial>
-                                                                        <Button.ToolTip>
-                                                                            <Label Content="{Binding RouteStateText}" FontWeight="DemiBold" />
-                                                                        </Button.ToolTip>
-                                                                        <i:Interaction.Triggers>
-                                                                            <i:EventTrigger EventName="Click">
-                                                                                <cal:ActionMessage MethodName="HandleManageRoutes">
-                                                                                    <cal:Parameter Value="{Binding}" />
-                                                                                </cal:ActionMessage>
-                                                                            </i:EventTrigger>
-                                                                        </i:Interaction.Triggers>
-                                                                    </Button>
-                                                                    <TextBlock Foreground="White" Margin="5,2"
-                                                                               Grid.ColumnSpan="2"
-                                                                               Grid.Row="1" FontSize="10"
-                                                                               Text="{Binding Description}"
-                                                                               TextTrimming="WordEllipsis" />
-                                                                </Grid>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </ScrollViewer>
-                                            <TextBlock Foreground="#FF575757" Text="No resolvers have been loaded yet"
-                                                       Visibility="{Binding Resolvers.Count, Converter={StaticResource IntegerToVisibilityConverter}}"
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Grid>
+                                            <Button DockPanel.Dock="Right"
+                                                    Command="{Binding AddCustomResolverFromStampCommand}"
+                                                    Cursor="Hand"
+                                                    Content="Add custom resolver"
+                                                    Width="Auto" HorizontalAlignment="Right"
+                                                    Style="{DynamicResource CustomAccentedSquareButtonStyle}"
+                                                    Margin="0,0,5,0" />
+                                        </DockPanel>
+                                    </Grid>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Text="{lex:Loc Key=default_settings_configuration_dnssec}"
+                                                   Foreground="#FF575757" Margin="5,5,0,2" />
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Text="{Binding DnscryptProxyConfiguration.require_dnssec, Converter={StaticResource BoolToTextConverter}}"
+                                                   FontWeight="Bold"
+                                                   Foreground="{Binding DnscryptProxyConfiguration.require_dnssec,Converter={StaticResource BoolToForegroundConverter}}"
+                                                   Margin="5,5,0,2" />
+                                        <TextBlock VerticalAlignment="Center" Foreground="#FF575757"
+                                                   Margin="5,5,0,2">
+                                            |
+                                        </TextBlock>
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Text="{lex:Loc Key=default_settings_configuration_nolog}"
+                                                   Foreground="#FF575757" Margin="5,5,0,2" />
+                                        <TextBlock VerticalAlignment="Center" FontWeight="Bold"
+                                                   Margin="5,5,0,2"
+                                                   Text="{Binding DnscryptProxyConfiguration.require_nolog, Converter={StaticResource BoolToTextConverter}}"
+                                                   Foreground="{Binding DnscryptProxyConfiguration.require_nolog,Converter={StaticResource BoolToForegroundConverter}}" />
+                                        <TextBlock VerticalAlignment="Center" Foreground="#FF575757"
+                                                   Margin="5,5,0,2">
+                                            |
+                                        </TextBlock>
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Text="{lex:Loc Key=default_settings_configuration_nofilter}"
+                                                   Foreground="#FF575757" Margin="5,5,0,2" />
+                                        <TextBlock VerticalAlignment="Center" FontWeight="Bold"
+                                                   Text="{Binding DnscryptProxyConfiguration.require_nofilter, Converter={StaticResource BoolToTextConverter}}"
+                                                   Foreground="{Binding DnscryptProxyConfiguration.require_nofilter,Converter={StaticResource BoolToForegroundConverter}}"
+                                                   Margin="5,5,0,2" />
                                     </StackPanel>
-                                </Border>
-                            </DockPanel>
-                        </ScrollViewer>
+                                    <TextBox controls:TextBoxHelper.Watermark="Search" Text="{Binding ResolverFilter.Value, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition
+                                                Height="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=ActualHeight, Converter={StaticResource HeightConverter}, ConverterParameter='Resolvers'}" />
+                                        </Grid.RowDefinitions>
+                                        <DataGrid ItemsSource="{Binding Resolvers}" IsEnabled="True"
+                                                  Margin="0" AutoGenerateColumns="False" CanUserAddRows="False"
+                                                  CanUserDeleteRows="False"
+                                                  VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                                  VirtualizingStackPanel.IsVirtualizing="True"
+                                                  d:DataContext="{d:DesignInstance Type=models:AvailableResolver}">
+                                            <DataGrid.Columns>
+                                                <DataGridCheckBoxColumn Header="Enabled"
+                                                                        Binding="{Binding IsInServerList, UpdateSourceTrigger=PropertyChanged}"
+                                                                        ElementStyle="{x:Static DataGridCheckBoxColumn.DefaultEditingElementStyle}"
+                                                                        CanUserResize="False"/>
+                                                <DataGridTemplateColumn Width="35" CanUserResize="False">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate DataType="{x:Type models:AvailableResolver}">
+                                                            <Button
+                                                                Visibility="{Binding Protocol, Converter={StaticResource ProtocolToVisibilityConverter}}"
+                                                                Background="White"
+                                                                Width="25"
+                                                                Height="20"
+                                                                Cursor="Hand"
+                                                                HorizontalContentAlignment="Center"
+                                                                VerticalContentAlignment="Center"
+                                                                BorderBrush="{Binding RouteState, Converter={StaticResource RouteStateToColorConverter}}"
+                                                                FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
+                                                                Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
+                                                                Margin="5,2,0,2" HorizontalAlignment="Left"
+                                                                VerticalAlignment="Top">
+                                                                <iconPacks:PackIconMaterial
+                                                                    Kind="Shuffle"
+                                                                    Width="10"
+                                                                    Height="10"
+                                                                    HorizontalContentAlignment="Center"
+                                                                    VerticalContentAlignment="Center">
+                                                                    <iconPacks:PackIconMaterial.Foreground>
+                                                                        <SolidColorBrush Color="{Binding RouteState, Converter={StaticResource RouteStateToColorConverter}, Mode=OneWay}" />
+                                                                    </iconPacks:PackIconMaterial.Foreground>
+                                                                </iconPacks:PackIconMaterial>
+                                                                <Button.ToolTip>
+                                                                    <Label Content="{Binding RouteStateText}"
+                                                                           FontWeight="DemiBold" />
+                                                                </Button.ToolTip>
+                                                                <i:Interaction.Triggers>
+                                                                    <i:EventTrigger EventName="Click">
+                                                                        <cal:ActionMessage
+                                                                            MethodName="HandleManageRoutes">
+                                                                            <cal:Parameter Value="{Binding}" />
+                                                                        </cal:ActionMessage>
+                                                                    </i:EventTrigger>
+                                                                </i:Interaction.Triggers>
+                                                            </Button>
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+                                                <DataGridTextColumn IsReadOnly="True" Header="Name"
+                                                                    Binding="{Binding Name}" />
+                                                <DataGridTextColumn IsReadOnly="True" Header="Protocol"
+                                                                    Binding="{Binding Protocol}" />
+                                                <DataGridCheckBoxColumn Header="DnsSec" 
+                                                                        IsReadOnly="True" 
+                                                                        Binding="{Binding DnsSec}"
+                                                                        CanUserResize="False"/>
+                                                <DataGridCheckBoxColumn Header="NoLog" 
+                                                                        IsReadOnly="True" 
+                                                                        Binding="{Binding NoLog}"
+                                                                        CanUserResize="False"/>
+                                                <DataGridCheckBoxColumn Header="NoFilter" 
+                                                                        IsReadOnly="True" 
+                                                                        Binding="{Binding NoFilter}"
+                                                                        CanUserResize="False"/>
+                                                <DataGridTextColumn IsReadOnly="True" Header="Description"
+                                                                    Binding="{Binding Description}" Width="400">
+                                                    <DataGridTextColumn.ElementStyle>
+                                                        <Style>
+                                                            <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+                                                        </Style>
+                                                    </DataGridTextColumn.ElementStyle>
+                                                </DataGridTextColumn>
+                                            </DataGrid.Columns>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="{x:Type models:AvailableResolver}">
+                                                    <Border BorderThickness="0.2" Background="White"
+                                                            Padding="1" Margin="0,5,0,0">
+                                                        <StackPanel Orientation="Horizontal" Cursor="Hand"
+                                                                    Background="{Binding IsInServerList, Converter={StaticResource ServerListBackgroundConverter}}"
+                                                                    ToolTip="{Binding ToolTip}">
+                                                            <!--<TextBlock Foreground="White" Margin="5,2"
+                                                                               FontSize="10"
+                                                                               Text="{Binding Description}"
+                                                                               TextTrimming="WordEllipsis" />-->
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </DataGrid>
+                                        <TextBlock Foreground="#FF575757" Text="No resolvers have been loaded yet"
+                                                   Visibility="{Binding Resolvers.Count, Converter={StaticResource IntegerToVisibilityConverter}}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </DockPanel>
                     </TabItem.Content>
                 </TabItem>
                 <TabItem Padding="10,2,10,2" Height="39" VerticalAlignment="Top" Tag="advancedSettingsTab"
@@ -676,12 +715,12 @@
                                                        VerticalAlignment="Bottom"
                                                        HorizontalAlignment="Left" Margin="0,0,0,5">
                                             </TextBlock>
-                                            <controls:ToggleSwitchButton
+                                            <controls:ToggleSwitch
                                                 IsEnabled="{Binding IsWorkingOnService, Converter={StaticResource ReverseBoolToEnabledConverter}}"
                                                 Grid.Row="0" Grid.Column="1" Cursor="Hand"
-                                                IsChecked="{Binding DnscryptProxyConfiguration.cache}"
+                                                IsOn="{Binding DnscryptProxyConfiguration.cache}"
                                                 HorizontalAlignment="Right" VerticalAlignment="Top">
-                                            </controls:ToggleSwitchButton>
+                                            </controls:ToggleSwitch>
                                         </Grid>
                                         <!-- DNS Cache end -->
                                         <!-- Block IPv6 begin -->
@@ -718,12 +757,12 @@
                                                        VerticalAlignment="Bottom"
                                                        HorizontalAlignment="Left" Margin="0,0,0,5">
                                             </TextBlock>
-                                            <controls:ToggleSwitchButton
+                                            <controls:ToggleSwitch
                                                 IsEnabled="{Binding IsWorkingOnService, Converter={StaticResource ReverseBoolToEnabledConverter}}"
                                                 Grid.Row="0" Grid.Column="1" Cursor="Hand"
-                                                IsChecked="{Binding DnscryptProxyConfiguration.block_ipv6}"
+                                                IsOn="{Binding DnscryptProxyConfiguration.block_ipv6}"
                                                 HorizontalAlignment="Right" VerticalAlignment="Top">
-                                            </controls:ToggleSwitchButton>
+                                            </controls:ToggleSwitch>
                                         </Grid>
                                         <!-- Block IPv6 end -->
                                         <!-- Force TCP begin -->
@@ -760,12 +799,12 @@
                                                        VerticalAlignment="Bottom"
                                                        HorizontalAlignment="Left" Margin="0,0,0,5">
                                             </TextBlock>
-                                            <controls:ToggleSwitchButton
+                                            <controls:ToggleSwitch
                                                 IsEnabled="{Binding IsWorkingOnService, Converter={StaticResource ReverseBoolToEnabledConverter}}"
                                                 Grid.Row="0" Grid.Column="1" Cursor="Hand"
-                                                IsChecked="{Binding DnscryptProxyConfiguration.force_tcp}"
+                                                IsOn="{Binding DnscryptProxyConfiguration.force_tcp}"
                                                 HorizontalAlignment="Right" VerticalAlignment="Top">
-                                            </controls:ToggleSwitchButton>
+                                            </controls:ToggleSwitch>
                                         </Grid>
                                         <!-- Force TCP end -->
                                         <!-- Global Resolver begin -->
@@ -802,12 +841,12 @@
                                                        VerticalAlignment="Bottom"
                                                        HorizontalAlignment="Left" Margin="0,0,0,5">
                                             </TextBlock>
-                                            <controls:ToggleSwitchButton
+                                            <controls:ToggleSwitch
                                                 IsEnabled="{Binding IsWorkingOnService, Converter={StaticResource ReverseBoolToEnabledConverter}}"
                                                 Grid.Row="0" Grid.Column="1" Cursor="Hand"
-                                                IsChecked="{Binding IsOperatingAsGlobalResolver}"
+                                                IsOn="{Binding IsOperatingAsGlobalResolver}"
                                                 HorizontalAlignment="Right" VerticalAlignment="Top">
-                                            </controls:ToggleSwitchButton>
+                                            </controls:ToggleSwitch>
                                         </Grid>
                                         <!-- Global Resolver end -->
                                         <!-- Fallback Resolver begin -->
@@ -926,12 +965,12 @@
                                                        VerticalAlignment="Bottom"
                                                        HorizontalAlignment="Left" Margin="0,0,0,5">
                                             </TextBlock>
-                                            <controls:ToggleSwitchButton
+                                            <controls:ToggleSwitch
                                                 IsEnabled="{Binding IsWorkingOnService, Converter={StaticResource ReverseBoolToEnabledConverter}}"
                                                 Grid.Row="0" Grid.Column="1" Cursor="Hand"
-                                                IsChecked="{Binding DnscryptProxyConfiguration.log}"
+                                                IsOn="{Binding DnscryptProxyConfiguration.log}"
                                                 HorizontalAlignment="Right" VerticalAlignment="Top">
-                                            </controls:ToggleSwitchButton>
+                                            </controls:ToggleSwitch>
                                         </Grid>
                                         <!-- Logging end -->
                                         <Button x:Name="SaveAdvancedSettings"
@@ -994,12 +1033,12 @@
                                                        Foreground="#FF8ab329" FontSize="20"
                                                        Opacity="0.7" Margin="5,0,0,3" FontWeight="Bold">
                                             </TextBlock>
-                                            <controls:ToggleSwitchButton Grid.Column="2" Grid.Row="0"
+                                            <controls:ToggleSwitch Grid.Column="2" Grid.Row="0"
                                                                          Cursor="Hand"
-                                                                         IsChecked="{Binding IsQueryLogLogging}"
+                                                                         IsOn="{Binding IsQueryLogLogging}"
                                                                          HorizontalAlignment="Right"
                                                                          VerticalAlignment="Top" Margin="0,0,10,0">
-                                            </controls:ToggleSwitchButton>
+                                            </controls:ToggleSwitch>
                                         </Grid>
                                         <Grid Grid.Row="1">
                                             <customControls:LoggingListView SelectedItem="{Binding SelectedQueryLogLine}"
@@ -1060,7 +1099,7 @@
                                                         <Binding Path="IsQueryLogLogging" />
                                                     </MultiBinding>
                                                 </StackPanel.Visibility>
-                                                <controls:ProgressRing Foreground="{DynamicResource AccentColorBrush}"
+                                                <controls:ProgressRing Foreground="{DynamicResource MahApps.Brushes.Accent}"
                                                                        Width="24"
                                                                        Height="24" />
                                                 <TextBlock Margin="0,10,0,0" Foreground="#FF575757"
@@ -1096,7 +1135,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="5,0,0,0">
@@ -1106,7 +1145,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                     <Button.ToolTip>
                                                         <Label Content="{lex:Loc Key=querylog_button_clear}"
                                                                FontWeight="DemiBold" />
@@ -1120,7 +1159,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="5,0,5,0">
@@ -1130,7 +1169,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                     <Button.ToolTip>
                                                         <Label
                                                             Content="{lex:Loc Key=querylog_button_block}"
@@ -1156,7 +1195,7 @@
                                                     Cursor="Hand" Grid.Row="1" Grid.Column="2"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    BorderBrush="{DynamicResource AccentColorBrush}"
+                                                    BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                     FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                     Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                     Margin="5,0,5,0">
@@ -1166,7 +1205,7 @@
                                                     Height="15"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    Foreground="{DynamicResource AccentColorBrush}" />
+                                                    Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                         Content="{lex:Loc Key=button_select_path}"
@@ -1232,9 +1271,9 @@
                                                    Foreground="#FF8ab329" FontSize="20"
                                                    Opacity="0.7" Margin="5,0,0,0" FontWeight="Bold">
                                     </TextBlock>
-                                    <controls:ToggleSwitchButton HorizontalAlignment="Right" Margin="0,0,5,0"
+                                    <controls:ToggleSwitch HorizontalAlignment="Right" Margin="0,0,5,0"
                                                                      Cursor="Hand"
-                                                                     IsChecked="{Binding IsCloakingEnabled}"
+                                                                     IsOn="{Binding IsCloakingEnabled}"
                                                                      Grid.Column="1" Grid.Row="0" />
                                     <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0">
                                         <Grid.ColumnDefinitions>
@@ -1261,7 +1300,7 @@
                                                     Cursor="Hand"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    BorderBrush="{DynamicResource AccentColorBrush}"
+                                                    BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                     FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                     Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                     Margin="15,0,0,0">
@@ -1271,7 +1310,7 @@
                                                     Height="15"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    Foreground="{DynamicResource AccentColorBrush}" />
+                                                    Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                             <Button.ToolTip>
                                                 <Label
                                                         Content="{lex:Loc Key=button_select_path}"
@@ -1297,7 +1336,6 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <ListView BorderBrush="#198AB328" Grid.Column="0"
-                                                      IsEnabled="{Binding IsWorking, Converter={StaticResource ReverseBoolToEnabledConverter}}"
                                                       ScrollViewer.VerticalScrollBarVisibility="Visible"
                                                       ScrollViewer.CanContentScroll="True"
                                                       MinHeight="180" MinWidth="680"
@@ -1325,7 +1363,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}">
                                                 <iconPacks:PackIconMaterial
@@ -1334,7 +1372,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_cloaking_add}"
@@ -1349,7 +1387,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -1359,7 +1397,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_cloaking_remove}"
@@ -1374,7 +1412,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -1384,7 +1422,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_cloaking_import}"
@@ -1399,7 +1437,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -1409,7 +1447,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_cloaking_export}"
@@ -1430,9 +1468,9 @@
                                                    Foreground="#FF8ab329" FontSize="20"
                                                    Opacity="0.7" FontWeight="Bold">
                                     </TextBlock>
-                                    <controls:ToggleSwitchButton HorizontalAlignment="Right" Margin="0,7,5,0"
+                                    <controls:ToggleSwitch HorizontalAlignment="Right" Margin="0,7,5,0"
                                                                      Cursor="Hand"
-                                                                     IsChecked="{Binding IsForwardingEnabled}"
+                                                                     IsOn="{Binding IsForwardingEnabled}"
                                                                      Grid.Column="1" Grid.Row="4" />
                                     <Grid Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2" Margin="0,10,0,0">
                                         <Grid.ColumnDefinitions>
@@ -1459,7 +1497,7 @@
                                                     Cursor="Hand"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    BorderBrush="{DynamicResource AccentColorBrush}"
+                                                    BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                     FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                     Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                     Margin="15,0,0,0">
@@ -1469,7 +1507,7 @@
                                                     Height="15"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    Foreground="{DynamicResource AccentColorBrush}" />
+                                                    Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                             <Button.ToolTip>
                                                 <Label
                                                         Content="{lex:Loc Key=button_select_path}"
@@ -1495,7 +1533,6 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <ListView BorderBrush="#198AB328" Grid.Column="0"
-                                                      IsEnabled="{Binding IsWorking, Converter={StaticResource ReverseBoolToEnabledConverter}}"
                                                       ScrollViewer.VerticalScrollBarVisibility="Visible"
                                                       ScrollViewer.CanContentScroll="True"
                                                       MinHeight="180" MaxHeight="600" MinWidth="680"
@@ -1531,7 +1568,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}">
                                                 <iconPacks:PackIconMaterial
@@ -1540,7 +1577,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_forwarding_add}"
@@ -1555,7 +1592,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -1565,7 +1602,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_forwarding_remove}"
@@ -1580,7 +1617,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -1590,7 +1627,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_forwarding_import}"
@@ -1605,7 +1642,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -1615,7 +1652,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_forwarding_export}"
@@ -1676,12 +1713,12 @@
                                                        Foreground="#FF8ab329" FontSize="20"
                                                        Opacity="0.7" Margin="5,0,0,3" FontWeight="Bold">
                                             </TextBlock>
-                                            <controls:ToggleSwitchButton Grid.Column="2" Grid.Row="0"
+                                            <controls:ToggleSwitch Grid.Column="2" Grid.Row="0"
                                                                          Cursor="Hand"
-                                                                         IsChecked="{Binding IsDomainBlockLogLogging}"
+                                                                         IsOn="{Binding IsDomainBlockLogLogging}"
                                                                          HorizontalAlignment="Right"
                                                                          VerticalAlignment="Top" Margin="0,0,10,0">
-                                            </controls:ToggleSwitchButton>
+                                            </controls:ToggleSwitch>
                                         </Grid>
                                         <Grid Grid.Row="1">
                                             <ListView SelectedItem="{Binding SelectedDomainBlockLogLine}"
@@ -1729,7 +1766,7 @@
                                                         <Binding Path="IsDomainBlockLogLogging" />
                                                     </MultiBinding>
                                                 </StackPanel.Visibility>
-                                                <controls:ProgressRing Foreground="{DynamicResource AccentColorBrush}"
+                                                <controls:ProgressRing Foreground="{DynamicResource MahApps.Brushes.Accent}"
                                                                        Width="24"
                                                                        Height="24" />
                                                 <TextBlock Margin="0,10,0,0" Foreground="#FF575757"
@@ -1766,7 +1803,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="5,0,0,0">
@@ -1776,7 +1813,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                     <Button.ToolTip>
                                                         <Label Content="{lex:Loc Key=querylog_button_clear}"
                                                                FontWeight="DemiBold" />
@@ -1790,7 +1827,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="5,0,5,0">
@@ -1800,7 +1837,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                     <Button.ToolTip>
                                                         <Label
                                                             Content="whitelist"
@@ -1826,7 +1863,7 @@
                                                     Cursor="Hand" Grid.Row="1" Grid.Column="2"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    BorderBrush="{DynamicResource AccentColorBrush}"
+                                                    BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                     FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                     Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                     Margin="5,0,5,0">
@@ -1836,7 +1873,7 @@
                                                     Height="15"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    Foreground="{DynamicResource AccentColorBrush}" />
+                                                    Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                         Content="{lex:Loc Key=button_select_path}"
@@ -1935,9 +1972,9 @@
                                                    Foreground="#FF8ab329" FontSize="20"
                                                    Opacity="0.7" Margin="5,0,0,0" FontWeight="Bold">
                                     </TextBlock>
-                                    <controls:ToggleSwitchButton HorizontalAlignment="Right" Margin="0,0,5,0"
+                                    <controls:ToggleSwitch HorizontalAlignment="Right" Margin="0,0,5,0"
                                                                      Cursor="Hand"
-                                                                     IsChecked="{Binding IsBlacklistEnabled}"
+                                                                     IsOn="{Binding IsBlacklistEnabled}"
                                                                      Grid.Column="1" Grid.Row="0" />
                                     <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0">
                                         <Grid.ColumnDefinitions>
@@ -1964,7 +2001,7 @@
                                                     Cursor="Hand"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    BorderBrush="{DynamicResource AccentColorBrush}"
+                                                    BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                     FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                     Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                     Margin="15,0,0,0">
@@ -1974,7 +2011,7 @@
                                                     Height="15"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    Foreground="{DynamicResource AccentColorBrush}" />
+                                                    Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                             <Button.ToolTip>
                                                 <Label
                                                         Content="{lex:Loc Key=button_select_path}"
@@ -2002,7 +2039,6 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <ListView BorderBrush="#198AB328" Grid.Column="0"
-                                                      IsEnabled="{Binding IsWorking, Converter={StaticResource ReverseBoolToEnabledConverter}}"
                                                       ScrollViewer.VerticalScrollBarVisibility="Visible"
                                                       ScrollViewer.CanContentScroll="True"
                                                       MinHeight="180" MinWidth="680"
@@ -2025,7 +2061,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}">
                                                 <iconPacks:PackIconMaterial
@@ -2034,7 +2070,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_whitelist_add}"
@@ -2049,7 +2085,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -2059,7 +2095,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_whitelist_remove}"
@@ -2074,7 +2110,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -2084,7 +2120,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_whitelist_import}"
@@ -2099,7 +2135,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -2109,7 +2145,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_whitelist_export}"
@@ -2141,7 +2177,7 @@
                                                     Cursor="Hand"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    BorderBrush="{DynamicResource AccentColorBrush}"
+                                                    BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                     FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                     Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                     Margin="15,0,0,0">
@@ -2151,7 +2187,7 @@
                                                     Height="15"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    Foreground="{DynamicResource AccentColorBrush}" />
+                                                    Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                             <Button.ToolTip>
                                                 <Label
                                                         Content="{lex:Loc Key=button_select_path}"
@@ -2182,7 +2218,6 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <ListView BorderBrush="#198AB328" Grid.Column="0"
-                                                      IsEnabled="{Binding IsWorking, Converter={StaticResource ReverseBoolToEnabledConverter}}"
                                                       ScrollViewer.VerticalScrollBarVisibility="Visible"
                                                       ScrollViewer.CanContentScroll="True"
                                                       MinHeight="180" MinWidth="680"
@@ -2205,7 +2240,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}">
                                                 <iconPacks:PackIconMaterial
@@ -2214,7 +2249,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_blacklist_add}"
@@ -2229,7 +2264,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -2239,7 +2274,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_blacklist_remove}"
@@ -2254,7 +2289,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -2264,7 +2299,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_blacklist_import}"
@@ -2279,7 +2314,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -2289,7 +2324,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_blacklist_export}"
@@ -2303,7 +2338,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -2313,7 +2348,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label
                                                             Content="{lex:Loc Key=button_blacklist_build}"
@@ -2327,7 +2362,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="0,7,0,0">
@@ -2337,7 +2372,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                                 <Button.ToolTip>
                                                     <Label Content="{lex:Loc Key=button_blacklist_clear}"
                                                                FontWeight="DemiBold" />
@@ -2368,7 +2403,7 @@
                                                     Cursor="Hand"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    BorderBrush="{DynamicResource AccentColorBrush}"
+                                                    BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                     FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                     Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                     Margin="15,0,0,0">
@@ -2378,7 +2413,7 @@
                                                     Height="15"
                                                     HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
-                                                    Foreground="{DynamicResource AccentColorBrush}" />
+                                                    Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                                             <Button.ToolTip>
                                                 <Label
                                                         Content="{lex:Loc Key=button_select_path}"

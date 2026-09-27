@@ -505,7 +505,7 @@
     <value>Este es un servidor normal, no cifrado, que sólo se usará para una única consulta cuando se esté recuperando la lista inicial de servidores, y sólo si la configuración DNS del sistema no funciona. Si estás en China, puede que aquí necesites usar 114.114.114.114:53.</value>
   </data>
   <data name="trayicon_tooltip" xml:space="preserve">
-    <value>Simple DNSCrypt</value>
+    <value>Simple DNSCrypt Plus</value>
   </data>
   <data name="trayicon_exit" xml:space="preserve">
     <value>Salir</value>
@@ -535,7 +535,7 @@
     <value>Minimizar a la bandeja al cerrar</value>
   </data>
   <data name="settings_start_in_tray" xml:space="preserve">
-    <value>Iniciar Simple DNSCrypt minimizado en la bandeja</value>
+    <value>Iniciar Simple DNSCrypt Plus minimizado en la bandeja</value>
   </data>
   <data name="settings_update_silent" xml:space="preserve">
     <value>Instalar nuevas versiones silenciosamente</value>

@@ -10,7 +10,7 @@
       d:DesignHeight="450" d:DesignWidth="800"
       ChildWindowWidth="400"
       lex:LocalizeDictionary.DesignCulture="en"
-      lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCrypt"
+      lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCryptPlus"
       lex:ResxLocalizationProvider.DefaultDictionary="Translation"
       Title="AddRuleWindow">
     <Grid Background="#198AB328">

@@ -16,101 +16,96 @@ using System.Reflection;
 
 namespace SimpleDnsCrypt
 {
-	public class AppBootstrapper : BootstrapperBase
-	{
-		private CompositionContainer _container;
-		private static readonly ILog Log = LogManagerHelper.Factory();
-		private static Mutex _mutex = null;
+    public class AppBootstrapper : BootstrapperBase
+    {
+        private CompositionContainer _container;
+        private static readonly ILog Log = LogManagerHelper.Factory();
+        private static Mutex _mutex;
 
-		public AppBootstrapper()
-		{
-			LogManager.GetLog = type => new NLogLogger(type);
-			Initialize();
-		}
+        public AppBootstrapper()
+        {
+            LogManager.GetLog = type => new NLogLogger(type);
+            Initialize();
+        }
 
-		protected override void Configure()
-		{
-			try
-			{
-				_container = new CompositionContainer(
-					new AggregateCatalog(AssemblySource.Instance.Select(x => new AssemblyCatalog(x))
-						.OfType<ComposablePartCatalog>())
-				);
-				var batch = new CompositionBatch();
-				batch.AddExportedValue<IWindowManager>(new AppWindowManager());
-				batch.AddExportedValue<IEventAggregator>(new EventAggregator());
-				batch.AddExportedValue(_container);
-				_container.Compose(batch);
-			}
-			catch (Exception exception)
-			{
-				Log.Error(exception);
-			}
-		}
+        protected override void Configure()
+        {
+            try
+            {
+                _container = new CompositionContainer(
+                    new AggregateCatalog(AssemblySource.Instance.Select(x => new AssemblyCatalog(x))
+                        .OfType<ComposablePartCatalog>())
+                );
+                var batch = new CompositionBatch();
+                batch.AddExportedValue<IWindowManager>(new AppWindowManager());
+                batch.AddExportedValue<IEventAggregator>(new EventAggregator());
+                batch.AddExportedValue(_container);
+                _container.Compose(batch);
+            }
+            catch (Exception exception)
+            {
+                Log.Error(exception);
+            }
+        }
 
-		protected override object GetInstance(Type service, string key)
-		{
-			var contract = string.IsNullOrEmpty(key) ? AttributedModelServices.GetContractName(service) : key;
-			var exports = _container.GetExportedValues<object>(contract);
+        protected override object GetInstance(Type service, string key)
+        {
+            var contract = string.IsNullOrEmpty(key) ? AttributedModelServices.GetContractName(service) : key;
+            var exports = _container.GetExportedValues<object>(contract);
 
-			if (exports.Any())
-			{
-				return exports.First();
-			}
-			throw new Exception($"Could not locate any instances of contract {contract}.");
-		}
+            return exports.FirstOrDefault() ?? throw new Exception($"Could not locate any instances of contract {contract}.");
+        }
 
-		protected override IEnumerable<object> GetAllInstances(Type service)
-		{
-			return _container.GetExportedValues<object>(AttributedModelServices.GetContractName(service));
-		}
+        protected override IEnumerable<object> GetAllInstances(Type service)
+        {
+            return _container.GetExportedValues<object>(AttributedModelServices.GetContractName(service));
+        }
 
-		protected override void BuildUp(object instance)
-		{
-			_container.SatisfyImportsOnce(instance);
-		}
+        protected override void BuildUp(object instance)
+        {
+            _container.SatisfyImportsOnce(instance);
+        }
 
-		protected override void OnStartup(object sender, StartupEventArgs e)
-		{
-			try
-			{
-				// set the working directory
-				Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+        protected override void OnStartup(object sender, StartupEventArgs e)
+        {
+            try
+            {
+                // set the working directory
+                Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 
-				// prevent multiple instances
-				const string appName = "SimpleDnsCrypt";
-				_mutex = new Mutex(true, appName, out var createdNew);
+                // prevent multiple instances
+                // Name kept as "SimpleDnsCrypt" on purpose: renaming it would let a legacy
+                // SimpleDnsCrypt.exe and this build run at once, and both would write the same
+                // dnscrypt-proxy.toml and fight over the single dnscrypt-proxy service.
+                const string appName = "SimpleDnsCrypt";
+                _mutex = new Mutex(true, appName, out var createdNew);
 
-				if (!createdNew)
-				{
-					Application.Current.Shutdown();
-				}
+                if (!createdNew)
+                {
+                    Application.Current.Shutdown();
+                }
 
-				if (e.Args.Length == 1)
-				{
-					if (e.Args[0].Equals("-debug"))
-					{
-						LogMode.Debug = true;
-					}
-				}
+                if (e.Args is ["-debug"])
+                {
+                    LogMode.Debug = true;
+                }
 
-				var loader = _container.GetExportedValue<LoaderViewModel>();
-				var windowManager = IoC.Get<IWindowManager>();
-				windowManager.ShowDialog(loader);
-			}
-			catch (Exception exception)
-			{
-				Log.Error(exception);
-			}
-		}
+                var loader = _container.GetExportedValue<LoaderViewModel>();
+                var windowManager = IoC.Get<IWindowManager>();
+                windowManager.ShowDialogAsync(loader);
+            }
+            catch (Exception exception)
+            {
+                Log.Error(exception);
+            }
+        }
 
-		protected override void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
-		{
-			Log.Error(e.Exception);
-			Execute.OnUIThread(
-				() =>
-					MessageBox.Show(
-						"There was an UnhandledException. Check the log entries for further information.", "Error", MessageBoxButton.OK, MessageBoxImage.Error));
-		}
-	}
+        protected override void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            Log.Error(e.Exception);
+            Execute.OnUIThread(() => MessageBox.Show(
+                "There was an UnhandledException. Check the log entries for further information.",
+                "Error", MessageBoxButton.OK, MessageBoxImage.Error));
+        }
+    }
 }

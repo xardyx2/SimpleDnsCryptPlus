@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8-windows10.0.19041</TargetFramework>
+  </PropertyGroup>
+</Project>

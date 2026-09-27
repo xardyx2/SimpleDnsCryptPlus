@@ -535,7 +535,7 @@
     <value>I-minimize sa tray kapag isinasara</value>
   </data>
   <data name="settings_start_in_tray" xml:space="preserve">
-    <value>Simulan ang Simple DNSCrypt sa tray</value>
+    <value>Simulan ang Simple DNSCrypt Plus sa tray</value>
   </data>
   <data name="settings_update_silent" xml:space="preserve">
     <value>Tahimik na mag-install ng mga bagong bersyon</value>

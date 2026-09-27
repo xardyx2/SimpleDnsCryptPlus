@@ -508,7 +508,7 @@
     <value>این یک ارائه‌دهنده معمولی و غیر رمز‌نگاری‌شده DNS است که تنها برای درخواست‌های تکی درابتدای زمان دریافت فهرست ارائه‌دهندگان مورد استفاده قرار می‌گیرد، فقط درصورتی که پیکربندی DNS سیستمی کار نکند. کاربران کشور چین ممکن است که در اینجا نیاز به استفاده از 114.114.114.114:53 داشته باشند.</value>
   </data>
   <data name="trayicon_tooltip" xml:space="preserve">
-    <value>Simple DNSCrypt</value>
+    <value>Simple DNSCrypt Plus</value>
   </data>
   <data name="trayicon_exit" xml:space="preserve">
     <value>خروج</value>
@@ -538,7 +538,7 @@
     <value>Minimize to tray when closing</value>
   </data>
   <data name="settings_start_in_tray" xml:space="preserve">
-    <value>Start Simple DNSCrypt in tray</value>
+    <value>Start Simple DNSCrypt Plus in tray</value>
   </data>
   <data name="settings_update_silent" xml:space="preserve">
     <value>Silently install new versions</value>

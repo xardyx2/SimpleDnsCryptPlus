@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="SimpleDNSCrypt.insc" Language="1033" Version="0.8.2" Manufacturer="instant.sc"
+           UpgradeCode="b561df39-7e27-44e4-978d-22df6eea11b4">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Platform="x64" />
+    <MediaTemplate EmbedCab="yes" />
+    <Feature Id="ProductFeature" Title="SimpleDNSCrypt" Level="1" ConfigurableDirectory="INSTALLFOLDER">
+      <ComponentGroupRef Id="SimpleDNSCrypt_Project" />
+      <ComponentRef Id="Registry" />
+      <ComponentRef Id="ApplicationShortcut" />
+      <ComponentRef Id="ServiceConfig" />
+    </Feature>
+    <UIRef Id="WixUI_InstallDir" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <MajorUpgrade AllowDowngrades="yes" />
+    <CustomAction Id='UninstallHelper' FileKey='fil642D7E8813ED6B2EB95FB4C9D8255F7C' ExeCommand='' Execute="deferred" Impersonate="no" Return="check" />
+    <InstallExecuteSequence>
+      <DeleteServices>NOT UPGRADINGPRODUCTCODE</DeleteServices>
+      <Custom Action="UninstallHelper" After="InstallInitialize">NOT UPGRADINGPRODUCTCODE and REMOVE="ALL"</Custom>
+    </InstallExecuteSequence>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Component Id="ServiceConfig" Guid="e2b3771e-5b8e-4e07-9f46-6133d09ee20b">
+        <ServiceControl Id="DnscryptServiceStopRemove" Name="dnscrypt-proxy" Remove="uninstall"/>
+      </Component>
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="SimpleDNSCrypt" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="SimpleDNSCrypt">
+          <Component Id="ApplicationShortcut" Guid="32c0c96b-a096-44fa-b8cb-f5ca84f881dd">
+            <Shortcut Id="ApplicationStartMenuShortcut" 
+                  Name="SimpleDNSCrypt"
+                  Description="SimpleDNSCrypt"
+                  Target="[#fil12E9E5B12E65A378DD9B7308CCDA334E]"
+                  WorkingDirectory="INSTALLFOLDER"/>
+            <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+            <RegistryValue Root="HKCU" Key="Software\instantsc\SimpleDNSCrypt" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+          </Component>
+        </Directory>
+      </Directory>
+      <Component Id="Registry" Guid="161bb76a-8604-425b-8bd7-eeafb47c8cca">
+        <!--<RegistryKey Root="HKLM" Key="Software\instantsc\SimpleDNSCrypt">
+          <RegistryValue Type="string" Name="InstallDir" Value="[INSTALLFOLDER]" />
+        </RegistryKey>-->
+      </Component>
+    </Directory>
+  </Fragment>
+</Wix>

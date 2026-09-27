@@ -1,10 +1,10 @@
 ﻿namespace SimpleDnsCrypt.Windows
 {
-	public partial class SplashDialogWindow
-	{
-		public SplashDialogWindow()
-		{
-			InitializeComponent();
-		}
-	}
+    public partial class SplashDialogWindow
+    {
+        public SplashDialogWindow()
+        {
+            InitializeComponent();
+        }
+    }
 }

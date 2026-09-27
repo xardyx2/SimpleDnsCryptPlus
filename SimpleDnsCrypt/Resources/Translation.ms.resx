@@ -505,7 +505,7 @@
     <value>Ini adalah resolver DNS biasa yang tidak disulitkan, yang hanya akan digunakan untuk pertanyaan satu-pukulan apabila mengambil senarai penyelesai permulaan, dan hanya jika konfigurasi DNS sistem tidak berfungsi. Pengguna di China mungkin perlu menggunakan 114.114.114.114:53 di sini.</value>
   </data>
   <data name="trayicon_tooltip" xml:space="preserve">
-    <value>Simple DNSCrypt</value>
+    <value>Simple DNSCrypt Plus</value>
   </data>
   <data name="trayicon_exit" xml:space="preserve">
     <value>Keluar</value>
@@ -535,7 +535,7 @@
     <value>Semasa tutup minimakan tetingkap ke tray desktop</value>
   </data>
   <data name="settings_start_in_tray" xml:space="preserve">
-    <value>Mulakan Simple DNSCrypt dalam tray desktop</value>
+    <value>Mulakan Simple DNSCrypt Plus dalam tray desktop</value>
   </data>
   <data name="settings_update_silent" xml:space="preserve">
     <value>Pemasangan senyap untuk setiap versi baru</value>

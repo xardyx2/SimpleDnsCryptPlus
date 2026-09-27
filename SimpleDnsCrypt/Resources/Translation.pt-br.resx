@@ -508,7 +508,7 @@ Pense em uma nova instalação do {2}</value>
     <value>Esse é um resolvedor de DNS normal, não criptografado, que será usado apenas para consultas instantâneas ao recuperar a lista de resolvedores iniciais e somente se a configuração de DNS do sistema não funcionar. As pessoas na China talvez precisem usar 114.114.114.114:53 aqui. </value>
   </data>
   <data name="trayicon_tooltip" xml:space="preserve">
-    <value>Simple DNSCrypt</value>
+    <value>Simple DNSCrypt Plus</value>
   </data>
   <data name="trayicon_exit" xml:space="preserve">
     <value>Sair</value>
@@ -538,7 +538,7 @@ Pense em uma nova instalação do {2}</value>
     <value>Minimize para a área de notificações ao fechar</value>
   </data>
   <data name="settings_start_in_tray" xml:space="preserve">
-    <value>Iniciar o Simple DNSCrypt na área de notificações</value>
+    <value>Iniciar o Simple DNSCrypt Plus na área de notificações</value>
   </data>
   <data name="settings_update_silent" xml:space="preserve">
     <value>Instalar novas versões silenciosamente</value>

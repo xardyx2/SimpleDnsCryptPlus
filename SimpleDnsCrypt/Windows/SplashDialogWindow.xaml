@@ -5,7 +5,7 @@
         Title="SplashDialogWindow"
         Height="300"
         Width="800"
-        ShowInTaskbar="False"
+        ShowInTaskbar="True"
         UseNoneWindowStyle="True"
         ShowCloseButton="False"
         ShowTitleBar="False"            
@@ -13,7 +13,7 @@
         ShowMaxRestoreButton="False"
         ShowMinButton="False"
         ResizeMode="NoResize"
-        GlowBrush="{DynamicResource AccentColorBrush}"
+        GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
         WindowStartupLocation="CenterScreen">
     <Grid>
         
