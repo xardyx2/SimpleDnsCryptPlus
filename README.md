@@ -21,7 +21,7 @@ A simple management tool to configure [dnscrypt-proxy](https://github.com/DNSCry
 
 | | [upstream](https://github.com/DNSCrypt/SimpleDnsCrypt) | [instantsc](https://github.com/instantsc/SimpleDnsCrypt) | this fork (now) |
 |---|---|---|---|
-| Last release | 0.7.1 — Apr 2020 | 0.8.2 — Nov 2023 | `0.9.0-rc.1` — Sep 2026, prerelease; no stable yet |
+| Last release | 0.7.1 — Apr 2020 | 0.8.2 — Nov 2023 | `0.9.0-rc.2` — Sep 2026, prerelease; no stable yet |
 | Target framework | .NET Framework 4.8 | .NET 8 | .NET 10 (`net10.0-windows10.0.19041`) |
 | CI actually running | none in repo (AppVeyor lived on the author's personal account) | workflow committed, **never executed once** | GitHub Actions — `ci.yml` on every push, `release.yml` gated on a tag |
 | Bundled dnscrypt-proxy | 2.1.15 | 2.1.5 | **2.1.18**, fetched at build time with pinned SHA-256 |
@@ -84,7 +84,7 @@ Per-machine installer, registered in Apps & features and removable with `msiexec
 - `SimpleDNSCryptPlus-x86-<version>.msi`
 
 `<version>` carries the prerelease suffix while the project is pre-`1.0.0`; the current build is
-`SimpleDNSCryptPlus-x64-0.9.0-rc.1-portable.zip`.
+`SimpleDNSCryptPlus-x64-0.9.0-rc.2-portable.zip`.
 
 Grab them from [Releases](https://github.com/xardyx2/SimpleDnsCryptPlus/releases). Note that
 `/releases/latest` is empty until a stable release exists, and that is deliberate: a candidate must
@@ -95,12 +95,12 @@ Each release carries `SHA256SUMS.txt` and one `.minisig` per archive or installe
 downloaded from, then verify. This needs the [minisign](https://github.com/jedisct1/minisign) CLI:
 
 ```powershell
-$tag = 'v0.9.0-rc.1'
+$tag = 'v0.9.0-rc.2'
 Invoke-WebRequest `
   "https://raw.githubusercontent.com/xardyx2/SimpleDnsCryptPlus/refs/tags/$tag/tools/keys/update.pub" `
   -OutFile update.pub
 
-$payload = 'SimpleDNSCryptPlus-x64-0.9.0-rc.1-portable.zip'   # or the .msi of the same arch
+$payload = 'SimpleDNSCryptPlus-x64-0.9.0-rc.2-portable.zip'   # or the .msi of the same arch
 Get-FileHash ".\$payload" -Algorithm SHA256
 minisign -Vm ".\$payload" -x ".\$payload.minisig" -p .\update.pub
 ```

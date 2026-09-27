@@ -10,6 +10,16 @@ their respective repositories for authoritative histories.
 
 ## [Unreleased]
 
+Nothing has landed since the release candidate below.
+
+## [0.9.0-rc.2] - 2026-09-28
+
+The first release whose installers are produced by the pipeline that also signs and audits them.
+`v0.9.0-rc.1` deliberately received no MSI: rebuilding that tag's payload here produced 468 runtime
+files from .NET 10.0.11 against the 10.0.12 the published zips contain (`mscordaccore_amd64_amd64_
+10.0.1126.37416.dll` vs `..._10.0.1226.42308.dll`), and shipping an older runtime patch beside a
+newer one inside a single release is not a difference worth hiding behind the same version number.
+
 ### Added
 - **A per-machine MSI per architecture**, built from the same publish layout as the portable zip so
   the two channels cannot contain different code. It registers in Apps & features, stops and removes
@@ -168,7 +178,8 @@ project folder names likewise stay put.
 - Last release of the original project. dnscrypt-proxy 2.0.42, fallback-resolver dialog, tray
   mode, window-size memory.
 
-[Unreleased]: https://github.com/xardyx2/SimpleDnsCryptPlus/compare/v0.9.0-rc.1...HEAD
+[Unreleased]: https://github.com/xardyx2/SimpleDnsCryptPlus/compare/v0.9.0-rc.2...HEAD
+[0.9.0-rc.2]: https://github.com/xardyx2/SimpleDnsCryptPlus/releases/tag/v0.9.0-rc.2
 [0.9.0-rc.1]: https://github.com/xardyx2/SimpleDnsCryptPlus/releases/tag/v0.9.0-rc.1
 [0.8.2]: https://github.com/instantsc/SimpleDnsCrypt/releases/tag/0.8.2
 [0.7.1]: https://github.com/DNSCrypt/SimpleDnsCrypt/releases/tag/0.7.1
