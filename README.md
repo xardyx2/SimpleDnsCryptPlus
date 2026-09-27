@@ -1,4 +1,4 @@
-[![license](https://img.shields.io/github/license/xardyx2/SimpleDnsCryptPlus.svg?style=flat-square)](LICENSE.md)
+﻿[![license](https://img.shields.io/github/license/xardyx2/SimpleDnsCryptPlus.svg?style=flat-square)](LICENSE.md)
 [![release](https://img.shields.io/github/v/release/xardyx2/SimpleDnsCryptPlus.svg?style=flat-square)](https://github.com/xardyx2/SimpleDnsCryptPlus/releases/latest)
 [![dnscrypt-proxy](https://img.shields.io/badge/dnscrypt--proxy-2.1.5-orange.svg?style=flat-square)](https://github.com/DNSCrypt/dnscrypt-proxy)
 
@@ -35,7 +35,7 @@ reimplementation nor upstream's resolver-list migration.
 
 - **Artifacts are unsigned.** There is no Authenticode certificate. SmartScreen will warn, and
   some antivirus products report false positives for this class of app — it writes per-interface
-  DNS settings under `HKLM` and ships a Go binary. See [docs/AV-FALSE-POSITIVES.md](docs).
+  DNS settings under `HKLM` and ships a Go binary. See [docs/AV-FALSE-POSITIVES.md](docs/AV-FALSE-POSITIVES.md).
   Verifying the published SHA-256 and minisign signature is the intended check instead.
 - **Existing installations cannot be upgraded remotely, ever.** Upstream 0.7.x polls
   `raw.githubusercontent.com/bitbeans/.../update.yml` and validates against *Christian Hermann's*
@@ -47,7 +47,7 @@ reimplementation nor upstream's resolver-list migration.
   they live next to the executable and keep their original names.
 - **Translations are frozen.** The old POEditor project is owned by upstream's author.
   `Resources/Translation.*.resx` in this repository is now the source of truth, and new strings
-  ship English-only. See [translations/README.md](translations).
+  ship English-only. See [translations/README.md](translations/README.md).
 - **Portable zip only, for now.** The MSI project is kept in-tree but built by no workflow; it
   uses WiX v3, which cannot be built by `dotnet build` and whose successor (v4+) is a rewrite.
   If you used an MSI from any earlier project, uninstall it first — a portable copy and an
@@ -86,7 +86,7 @@ The `dnscrypt-proxy` binaries are **not** committed. A release build downloads t
 upstream and fails closed unless the digests match `tools/dnscrypt-proxy.lock.json`. For offline
 or source-only builds, set `-p:SkipDnscryptProxyDownload=true`.
 
-Before testing changes that touch live DNS, read [docs/testing/dns-safety.md](docs). The app
+Before testing changes that touch live DNS, read [docs/testing/dns-safety.md](docs/testing/dns-safety.md). The app
 installs a Windows service and rewrites per-interface DNS; testing it naively can leave your own
 machine unable to resolve any name — which also blocks you from looking up the fix.
 
