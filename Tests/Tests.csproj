@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041</TargetFramework>
+    <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -16,5 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SimpleDnsCrypt.Utils\SimpleDnsCrypt.Utils.csproj" />
+    <ProjectReference Include="..\SimpleDnsCrypt\SimpleDnsCrypt.csproj" />
   </ItemGroup>
 </Project>
