@@ -76,14 +76,16 @@ mid-test. Do not do R2 with uncommitted work you would mind losing.
 
 ## What Uninstall.exe does and does not do
 
-It is the only cleanup path that ships in the portable zip (there is no MSI — see
-`docs/adr/0002-portable-only-no-msi.md`). Read `Uninstall/Program.cs` before trusting it:
+It ships in the portable zip, and the MSI also runs it as a deferred custom action on uninstall —
+see `docs/adr/0003-msi-as-a-second-channel-with-wix-v3.md`, whose install/upgrade/uninstall paths are
+themselves an **R2** activity. Read `Uninstall/Program.cs` before trusting it:
 
 - For every operational, non-blacklisted interface it runs
   `netsh interface ipv4 delete dns "<name>" all` and the `ipv6` equivalent. That removes the static
   DNS entries, so the interface goes back to whatever DHCP offers.
 - It **does not stop or remove the `dnscrypt-proxy` service.** For that use the app's own uninstall
-  button or `dnscrypt-proxy -uninstall`.
+  button or `dnscrypt-proxy -uninstall`. Uninstalling via the MSI is the one path that does both,
+  because the package also carries a `ServiceControl` that stops and removes the service.
 - Every failure inside it is swallowed. Check with `Get-DnsClientServerAddress` afterwards; do not
   assume.
 

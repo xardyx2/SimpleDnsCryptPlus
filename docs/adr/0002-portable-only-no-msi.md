@@ -1,7 +1,9 @@
 # ADR 0002: Ship portable zips, defer MSI entirely
 
 Date: 2026-09-27
-Status: Accepted
+Status: Accepted — the "portable zips only" clause is superseded by
+`0003-msi-as-a-second-channel-with-wix-v3.md`; the reasoning below is kept as written, including the
+parts that turned out to be wrong (WiX v3.14 builds this fine, and Actions costs nothing here)
 
 ## Context
 
