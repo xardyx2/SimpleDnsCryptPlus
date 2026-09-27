@@ -79,7 +79,7 @@
                         <StackPanel Margin="2,5,10,0" Orientation="Horizontal"
                                     Visibility="{Binding SelectedLicense.LicenseCodeLink, Converter={StaticResource LicenseLinkToVisibilityConverter}}"
                                     HorizontalAlignment="Left">
-                            <iconPacks:PackIconMaterial Margin="0,2,0,0" Height="16" Width="16" Kind="GithubCircle" Opacity="0.7"
+                            <iconPacks:PackIconMaterial Margin="0,2,0,0" Height="16" Width="16" Kind="Github" Opacity="0.7"
                                                         Foreground="#FF8ab329" Cursor="Hand" />
                             <Button Style="{StaticResource HyperlinkButton}" Focusable="False"
                                     cal:Message.Attach="[Action HyperlinkRequestNavigate('code')]">

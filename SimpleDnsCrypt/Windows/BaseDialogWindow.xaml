@@ -15,6 +15,6 @@
         TitleForeground="White"
         Topmost="True"
         TitleCharacterCasing="Normal"
-        GlowBrush="{DynamicResource AccentColorBrush}"
+        GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
         WindowStartupLocation="CenterScreen">
 </controls:MetroWindow>

@@ -58,7 +58,7 @@
                                                         Cursor="Hand"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        BorderBrush="{DynamicResource AccentColorBrush}"
+                                                        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                                                         FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                                                         Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                                                         Margin="5,0,5,0">
@@ -68,7 +68,7 @@
                                                         Height="15"
                                                         HorizontalContentAlignment="Center"
                                                         VerticalContentAlignment="Center"
-                                                        Foreground="{DynamicResource AccentColorBrush}" />
+                                                        Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                         <Button.ToolTip>
                             <Label
                                                             Content="{lex:Loc Key=address_settings_add}"
@@ -83,7 +83,7 @@
                             Cursor="Hand"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
-                            BorderBrush="{DynamicResource AccentColorBrush}"
+                            BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                             FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                             Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                             Margin="5,0,5,0">
@@ -93,7 +93,7 @@
                             Height="15"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
-                            Foreground="{DynamicResource AccentColorBrush}" />
+                            Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                         <Button.ToolTip>
                             <Label
                                 Content="{lex:Loc Key=address_settings_remove}"
@@ -108,7 +108,7 @@
                             Cursor="Hand"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
-                            BorderBrush="{DynamicResource AccentColorBrush}"
+                            BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                             FocusVisualStyle="{DynamicResource MahApps.Metro.Styles.MetroCircleFocusVisual}"
                             Style="{DynamicResource MahApps.Metro.Styles.MetroCircleButtonStyle}"
                             Margin="5,0,5,0">
@@ -118,7 +118,7 @@
                             Height="15"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
-                            Foreground="{DynamicResource AccentColorBrush}" />
+                            Foreground="{DynamicResource MahApps.Brushes.Accent}" />
                         <Button.ToolTip>
                             <Label
                                 Content="{lex:Loc Key=address_settings_restore}"

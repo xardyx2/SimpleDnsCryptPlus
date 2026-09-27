@@ -1,85 +1,23 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
-using System.IO;
+using System.Linq;
 using System.Net.NetworkInformation;
-using System.Threading;
 
 namespace Uninstall
 {
     internal class Program
     {
-        private const string DnsCryptProxyFolder = "dnscrypt-proxy";
-        private const string DnsCryptProxyExecutableName = "dnscrypt-proxy.exe";
-        private const string DnsCryptProxyConfigName = "dnscrypt-proxy.toml";
-
-        private static void Main(string[] args)
+        private static void Main()
         {
             try
             {
-                BackupConfigurationFile();
                 ClearLocalNetworkInterfaces();
-                StopService();
-                Thread.Sleep(500);
-                UninstallService();
             }
             finally
             {
                 Environment.Exit(0);
             }
-        }
-
-        /// <summary>
-        ///		Copy dnscrypt-proxy.toml to tmp folder.
-        /// </summary>
-        internal static void BackupConfigurationFile()
-        {
-            try
-            {
-                var sdcConfig = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SimpleDnsCrypt.exe.config");
-                if (!File.Exists(sdcConfig)) return;
-                var sdcConfigMap = new ExeConfigurationFileMap
-                {
-                    ExeConfigFilename = sdcConfig
-                };
-                var sdcConfigContent =
-                    ConfigurationManager.OpenMappedExeConfiguration(sdcConfigMap, ConfigurationUserLevel.None);
-                if (!sdcConfigContent.HasFile) return;
-                var section = (ClientSettingsSection)sdcConfigContent.GetSection("userSettings/SimpleDnsCrypt.Properties.Settings");
-                var setting = section.Settings.Get("BackupAndRestoreConfigOnUpdate");
-                var backupAndRestoreConfigOnUpdate = Convert.ToBoolean(setting.Value.ValueXml.LastChild.InnerText);
-                if (!backupAndRestoreConfigOnUpdate) return;
-                var config = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DnsCryptProxyFolder,
-                    DnsCryptProxyConfigName);
-                if (!File.Exists(config)) return;
-                var tmp = Path.Combine(Path.GetTempPath(), DnsCryptProxyConfigName + ".bak");
-                Console.WriteLine($"backup configuration to {tmp}");
-                File.Copy(config, tmp);
-            }
-            catch (Exception) { }
-        }
-
-        /// <summary>
-        ///		Stop the dnscrypt-proxy service.
-        /// </summary>
-        internal static void StopService()
-        {
-            Console.WriteLine("stopping dnscrypt service");
-            var dnsCryptProxyExecutablePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DnsCryptProxyFolder, DnsCryptProxyExecutableName);
-            ExecuteWithArguments(dnsCryptProxyExecutablePath, "-service stop");
-        }
-
-        /// <summary>
-        ///		Uninstall the dnscrypt-proxy service.
-        /// </summary>
-        internal static void UninstallService()
-        {
-            Console.WriteLine("removing dnscrypt service");
-            var dnsCryptProxyExecutablePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DnsCryptProxyFolder, DnsCryptProxyExecutableName);
-            ExecuteWithArguments(dnsCryptProxyExecutablePath, "-service uninstall");
-            Registry.LocalMachine.DeleteSubKey(@"SYSTEM\CurrentControlSet\Services\EventLog\Application\dnscrypt-proxy", false);
         }
 
         /// <summary>
@@ -140,30 +78,18 @@ namespace Uninstall
                     "TAP"
                 };
 
-                var networkInterfaces = new List<NetworkInterface>();
-                foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
-                {
-                    if (nic.OperationalStatus != OperationalStatus.Up)
-                    {
-                        continue;
-                    }
-                    foreach (var blacklistEntry in networkInterfaceBlacklist)
-                    {
-                        if (nic.Description.Contains(blacklistEntry) || nic.Name.Contains(blacklistEntry)) continue;
-                        if (!networkInterfaces.Contains(nic))
-                        {
-                            networkInterfaces.Add(nic);
-                        }
-                    }
-                }
+                var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces()
+                    .Where(nic => nic.OperationalStatus == OperationalStatus.Up)
+                    .Where(nic => !networkInterfaceBlacklist.Any(blacklistEntry => nic.Description.Contains(blacklistEntry) || nic.Name.Contains(blacklistEntry)))
+                    .ToList();
 
                 foreach (var networkInterface in networkInterfaces)
                 {
-                    ExecuteWithArguments("netsh", "interface ipv4 delete dns \"" + networkInterface.Name + "\" all");
-                    ExecuteWithArguments("netsh", "interface ipv6 delete dns \"" + networkInterface.Name + "\" all");
+                    ExecuteWithArguments("netsh", $"interface ipv4 delete dns \"{networkInterface.Name}\" all");
+                    ExecuteWithArguments("netsh", $"interface ipv6 delete dns \"{networkInterface.Name}\" all");
                 }
             }
-            catch (Exception)
+            catch
             {
             }
         }

@@ -2,8 +2,23 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              cal:Bind.AtDesignTime="True"
-             xmlns:cal="http://www.caliburnproject.org">
-
+             xmlns:cal="http://www.caliburnproject.org" 
+             xmlns:lex="http://wpflocalizeextension.codeplex.com"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:SimpleDnsCrypt.ViewModels"
+             xmlns:converters="clr-namespace:SimpleDnsCrypt.Converters"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewModels:LoaderViewModel}"
+             lex:LocalizeDictionary.DesignCulture="en"
+             lex:ResxLocalizationProvider.DefaultAssembly="SimpleDnsCrypt"
+             lex:ResxLocalizationProvider.DefaultDictionary="Translation"
+>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid Background="#198AB328">
         <Border BorderThickness="1" Grid.Row="0" Grid.Column="0" Background="#198AB328" Margin="10"
                 Padding="10">
@@ -23,20 +38,17 @@
                     </DrawingBrush.Drawing>
                 </DrawingBrush>
             </Border.BorderBrush>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="20"></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                </Grid.RowDefinitions>
-                <Image Grid.Row="0" Source="/SimpleDnsCrypt;component/Images/128x128.png" Height="128" Width="128"></Image>
-                <TextBlock TextAlignment="Center" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" 
+            <StackPanel>
+                <Image Source="/SimpleDnsCrypt;component/Images/128x128.png" Height="128" Width="128"></Image>
+                <TextBlock TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" 
                            Foreground="#FF8ab329" FontSize="18" Opacity="0.7" FontWeight="Bold" Text="{Binding TitleText}"/>
-                <ProgressBar Height="10"  Grid.Row="2" IsIndeterminate="True"></ProgressBar>
-                <TextBlock TextAlignment="Center" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                            FontSize="14" Foreground="Gray" Text="{Binding ProgressText}"/>
-            </Grid>
+                <ProgressBar Height="10" IsIndeterminate="True" MinHeight="14" MaxHeight="14" />
+                <TextBlock TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                           FontSize="14" Foreground="Gray" Text="{Binding ProgressText}"/>
+                <Button Content="{lex:Loc Key=trayicon_exit}" 
+                        Visibility="{Binding Failed.Value, Converter={StaticResource BoolToVisibilityConverter}}"
+                        Command="{Binding ExitCommand}"/>
+            </StackPanel>
         </Border>
     </Grid>
 </UserControl>

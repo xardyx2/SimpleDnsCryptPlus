@@ -11,7 +11,7 @@
                       Width="{Binding WindowWidth, Mode=TwoWay}" 
                       Height="{Binding WindowHeight, Mode=TwoWay}" 
                       SizeToContent="WidthAndHeight"
-                      GlowBrush="{DynamicResource AccentColorBrush}"
+                      GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
                       Icon="../Images/simplednscrypt.ico" ShowIconOnTitleBar="False"
                       WindowStartupLocation="CenterScreen" TitleCharacterCasing="Normal" Topmost="False"
                       ShowMaxRestoreButton="False" ResizeMode="CanResizeWithGrip" ShowInTaskbar="True"
@@ -33,12 +33,12 @@
                 <iconPacks:PackIconMaterial Kind="Emoticon"/>
             </Button>
             <Button Cursor="Hand" x:Name="Settings" cal:Message.Attach="Settings" ToolTip="{lex:Loc Key=settings}">
-                <iconPacks:PackIconMaterial Kind="Settings"/>
+                <iconPacks:PackIconMaterial Kind="AccountSettings"/>
             </Button>
             <Button Cursor="Hand" x:Name="Proxies" cal:Message.Attach="Proxies" ToolTip="{lex:Loc Key=proxy_manage_proxies}">
                 <iconPacks:PackIconMaterial Kind="AccountNetwork"/>
             </Button>
-            <ComboBox Style="{StaticResource MetroComboBox}"
+            <ComboBox Style="{StaticResource MahApps.Styles.ComboBox}"
                       ItemsSource="{Binding Languages}"
                       SelectedItem="{Binding SelectedLanguage}"
                       IsEnabled="True"
