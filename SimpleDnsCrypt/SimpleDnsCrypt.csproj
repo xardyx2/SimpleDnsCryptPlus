@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8-windows10.0.19041</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041</TargetFramework>
     <AssemblyTitle>Simple DNSCrypt Plus</AssemblyTitle>
     <Product>Simple DNSCrypt Plus</Product>
     <AssemblyName>SimpleDnsCryptPlus</AssemblyName>
@@ -66,8 +66,8 @@
     <PackageReference Include="NLog" Version="5.2.5" />
     <PackageReference Include="ReactiveProperty" Version="9.3.4" />
     <PackageReference Include="ReactiveUI.WPF" Version="19.5.1" />
-    <PackageReference Include="System.ComponentModel.Composition" Version="8.0.0" />
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="8.0.0" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="10.0.12" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.12" />
     <PackageReference Include="WPFLocalizeExtension" Version="3.10.0" />
     <PackageReference Include="YamlDotNet" Version="13.7.1" />
   </ItemGroup>
@@ -87,11 +87,4 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
-  <Target Name="FixAL1073Warning" BeforeTargets="GenerateSatelliteAssemblies" Condition="'$(PlatformTarget)' == 'x64'">
-    <Message Text="Adjusting SDK tools directory to use x64 version of AL.EXE" />
-    <PropertyGroup>
-      <TargetFrameworkSDKToolsDirectory>$(TargetFrameworkSDKToolsDirectory)$(PlatformTarget)\</TargetFrameworkSDKToolsDirectory>
-      <SdkToolsPathMaybeWithx64Architecture>$(TargetFrameworkSDKToolsDirectory)</SdkToolsPathMaybeWithx64Architecture>
-    </PropertyGroup>
-  </Target>
 </Project>
