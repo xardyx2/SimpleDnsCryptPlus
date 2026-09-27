@@ -27,9 +27,9 @@ namespace SimpleDnsCrypt.ViewModels
 
         public ICommand ExitApplicationCommand { get; }
 
-        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
+        protected override async Task OnActivatedAsync(CancellationToken cancellationToken)
         {
-            await base.OnActivateAsync(cancellationToken);
+            await base.OnActivatedAsync(cancellationToken);
             _mainViewModel.ObservableForProperty(x => x.IsActive).TakeWhile(_ => IsActive).Do(_ => RefreshState()).Subscribe();
             RefreshState();
         }
