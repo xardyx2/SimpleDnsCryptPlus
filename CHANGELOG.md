@@ -58,11 +58,13 @@ project folder names likewise stay put.
 
 ### Fixed
 - Query, domain-block and address-block log views grew without bound for the life of the process,
-  behind upstream issue #19 (4 GB working set). Now capped at 1000 entries each, enforced at the
-  type level so reverting it is a compile error.
-- The log tail readers stalled permanently after dnscrypt-proxy rotated a log file — upstream
-  issue #287, "broken until restart". The seek landed past EOF and the stale offset was re-recorded
-  every 500 ms forever.
+  behind [instantsc/SimpleDnsCrypt#19](https://github.com/instantsc/SimpleDnsCrypt/issues/19)
+  ("4gb ram usage!"). Now capped at 1000 entries each, enforced at the type level so reverting it is
+  a compile error.
+- The log tail readers stalled permanently after dnscrypt-proxy rotated a log file —
+  [DNSCrypt/SimpleDnsCrypt#287](https://github.com/DNSCrypt/SimpleDnsCrypt/issues/287), "Query log is
+  broken until Simple DNSCrypt is restarted". The seek landed past EOF and the stale offset was
+  re-recorded every 500 ms forever.
 - The configuration migration overwrote a user's custom resolver `sources` list unconditionally;
   it now only replaces the untouched v2 default pair. This also removes a latent
   `IndexOutOfRangeException` on a single-URL source list.
@@ -96,9 +98,19 @@ project folder names likewise stay put.
 - `YamlDotNet` and the dead `UriYamlTypeConverter`. The update manifest was their only user, and the
   manifest is JSON now, so the dependency and its About-screen entry left with it.
 
-### Planned before `1.0.0`
-- Translation key-drift check in CI.
-- Backlog triage with written reproductions.
+### Added
+- `docs/testing/dns-safety.md` (the R0/R1/R2 protocol for testing software that rewrites your DNS),
+  `docs/AV-FALSE-POSITIVES.md`, `translations/README.md` and `docs/backlog-triage.md`.
+- A translation key-drift guard: the 34 language files still carry an identical set of 191 keys, and a
+  test fails if one diverges. `SIMPLEDNSCRYPT_ALLOW_VIRTUAL_NICS=1` lifts the adapter blacklist so a
+  VM guest lists interfaces at all, which is what makes the DNS-writing paths testable.
+
+### Still open before `1.0.0`
+- A person has to look at the tray icon menu and the three drag-drop surfaces. Both libraries took a
+  major bump, the app runs elevated, and UIPI stops a non-elevated automation from driving it.
+- Announcing the fork where the users are (`DNSCrypt/SimpleDnsCrypt#554`/`#581`,
+  `instantsc/SimpleDnsCrypt#27`). Drafted, deliberately not sent.
+- The update channel's dry run against a real published release, which needs the first tag.
 
 ## [0.8.2] - 2023-11-17 — instant.sc
 - Updated to .NET 8. Updated dependencies and dnscrypt-proxy to 2.1.5. Markup fixes and cleaner
