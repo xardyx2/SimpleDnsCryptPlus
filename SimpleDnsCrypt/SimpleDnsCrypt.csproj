@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.19041</TargetFramework>
@@ -54,22 +54,22 @@
     <EmbeddedResource Include="Resources\Licenses\Nett.txt" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Caliburn.Micro" Version="4.0.212" />
-    <PackageReference Include="gong-wpf-dragdrop" Version="3.2.1" />
-    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
-    <PackageReference Include="MahApps.Metro" Version="2.4.10" />
+    <PackageReference Include="Caliburn.Micro" Version="5.0.258" />
+    <PackageReference Include="gong-wpf-dragdrop" Version="4.0.0" />
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="2.0.1" />
+    <PackageReference Include="MahApps.Metro" Version="2.4.11" />
     <PackageReference Include="MahApps.Metro.IconPacks.Material" Version="4.11.0" />
     <PackageReference Include="MahApps.Metro.SimpleChildWindow" Version="2.2.1" />
     <PackageReference Include="Nett" Version="0.15.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
-    <PackageReference Include="NLog" Version="5.2.5" />
-    <PackageReference Include="ReactiveProperty" Version="9.3.4" />
+    <PackageReference Include="NLog" Version="6.2.1" />
+    <PackageReference Include="ReactiveProperty" Version="9.9.0" />
     <PackageReference Include="ReactiveUI.WPF" Version="19.5.1" />
     <PackageReference Include="System.ComponentModel.Composition" Version="10.0.12" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.12" />
     <PackageReference Include="WPFLocalizeExtension" Version="3.10.0" />
-    <PackageReference Include="YamlDotNet" Version="13.7.1" />
+    <PackageReference Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SimpleDnsCrypt.Utils\SimpleDnsCrypt.Utils.csproj" />

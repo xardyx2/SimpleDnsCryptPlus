@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using SimpleDnsCrypt.Helper;
 using SimpleDnsCrypt.Models;
+using SimpleDnsCrypt.Utils;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 
@@ -12,7 +13,12 @@ namespace SimpleDnsCrypt.ViewModels
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _events;
 
-        private ObservableCollection<AddressBlockLogLine> _addressBlockLogLines;
+        /// <summary>
+        /// Upper bound for the on-screen block log; the file on disk is the source of truth.
+        /// </summary>
+        private const int MaxAddressBlockLogEntries = 1000;
+
+        private BoundedObservableCollection<AddressBlockLogLine> _addressBlockLogLines;
         private string _addressBlockLogFile;
         private bool _isAddressBlockLogLogging;
         private AddressBlockLogLine _selectedAddressBlockLogLine;
@@ -24,7 +30,7 @@ namespace SimpleDnsCrypt.ViewModels
             _events = events;
             _events.SubscribeOnPublishedThread(this);
             _isAddressBlockLogLogging = false;
-            _addressBlockLogLines = new ObservableCollection<AddressBlockLogLine>();
+            _addressBlockLogLines = new BoundedObservableCollection<AddressBlockLogLine>(MaxAddressBlockLogEntries);
         }
 
         private void AddLogLine(AddressBlockLogLine addressBlockLogLine)
@@ -40,7 +46,7 @@ namespace SimpleDnsCrypt.ViewModels
             Execute.OnUIThread(() => { AddressBlockLogLines.Clear(); });
         }
 
-        public ObservableCollection<AddressBlockLogLine> AddressBlockLogLines
+        public BoundedObservableCollection<AddressBlockLogLine> AddressBlockLogLines
         {
             get => _addressBlockLogLines;
             set

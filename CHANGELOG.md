@@ -60,6 +60,6 @@ project folder names likewise stay put.
 - Last release of the original project. dnscrypt-proxy 2.0.42, fallback-resolver dialog, tray
   mode, window-size memory.
 
-[Unreleased]: https://github.com/esperion-agency/SimpleDnsCryptPlus
+[Unreleased]: https://github.com/xardyx2/SimpleDnsCryptPlus
 [0.8.2]: https://github.com/instantsc/SimpleDnsCrypt/releases/tag/0.8.2
 [0.7.1]: https://github.com/DNSCrypt/SimpleDnsCrypt/releases/tag/0.7.1

@@ -53,7 +53,7 @@ performs an in-place self-replacement of the running executable.
 
 ## Reporting a vulnerability
 
-Open a [GitHub security advisory](https://github.com/esperion-agency/SimpleDnsCryptPlus/security/advisories/new)
+Open a [GitHub security advisory](https://github.com/xardyx2/SimpleDnsCryptPlus/security/advisories/new)
 rather than a public issue. Expect an acknowledgement within a week; this is maintained by a small
 team in spare time, so please allow reasonable time for a fix. Do not file a public issue for an
 unresolved remote-code-execution or DNS-hijacking problem.

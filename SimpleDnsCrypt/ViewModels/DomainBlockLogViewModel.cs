@@ -21,7 +21,12 @@ namespace SimpleDnsCrypt.ViewModels
     {
         private static readonly ILog Log = LogManagerHelper.Factory();
 
-        private ObservableCollection<DomainBlockLogLine> _domainBlockLogLines;
+        /// <summary>
+        /// Upper bound for the on-screen block log; the file on disk is the source of truth.
+        /// </summary>
+        private const int MaxDomainBlockLogEntries = 1000;
+
+        private BoundedObservableCollection<DomainBlockLogLine> _domainBlockLogLines;
         private string _domainBlockLogFile;
         private bool _isDomainBlockLogLogging;
         private DomainBlockLogLine _selectedDomainBlockLogLine;
@@ -30,7 +35,7 @@ namespace SimpleDnsCrypt.ViewModels
         public DomainBlockLogViewModel()
         {
             _isDomainBlockLogLogging = false;
-            _domainBlockLogLines = new ObservableCollection<DomainBlockLogLine>();
+            _domainBlockLogLines = new BoundedObservableCollection<DomainBlockLogLine>(MaxDomainBlockLogEntries);
         }
 
         private void AddLogLine(DomainBlockLogLine domainBlockLogLine)
@@ -46,7 +51,7 @@ namespace SimpleDnsCrypt.ViewModels
             Execute.OnUIThread(() => { DomainBlockLogLines.Clear(); });
         }
 
-        public ObservableCollection<DomainBlockLogLine> DomainBlockLogLines
+        public BoundedObservableCollection<DomainBlockLogLine> DomainBlockLogLines
         {
             get => _domainBlockLogLines;
             set
@@ -186,22 +191,11 @@ namespace SimpleDnsCrypt.ViewModels
                                 while (_isDomainBlockLogLogging)
                                 {
                                     await Task.Delay(500);
-                                    //if the file size has not changed, idle
-                                    if (reader.BaseStream.Length == lastMaxOffset)
-                                        continue;
 
-                                    //seek to the last max offset
-                                    reader.BaseStream.Seek(lastMaxOffset, SeekOrigin.Begin);
-
-                                    //read out of the file until the EOF
-                                    while (reader.ReadLine() is { } line)
+                                    foreach (var line in LogTailReader.ReadNewLines(reader, ref lastMaxOffset))
                                     {
-                                        var blockLogLine = new DomainBlockLogLine(line);
-                                        AddLogLine(blockLogLine);
+                                        AddLogLine(new DomainBlockLogLine(line));
                                     }
-
-                                    //update the last max offset
-                                    lastMaxOffset = reader.BaseStream.Position;
                                 }
                             }
                         }).ConfigureAwait(false);

@@ -12,14 +12,14 @@ namespace SimpleDnsCrypt.Helper
             return type == typeof(Uri);
         }
 
-        public object ReadYaml(IParser parser, Type type)
+        public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
         {
             var value = ((Scalar)parser.Current).Value;
             parser.MoveNext();
             return new Uri(value);
         }
 
-        public void WriteYaml(IEmitter emitter, object value, Type type)
+        public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
         {
             var uri = (Uri)value;
             emitter.Emit(new Scalar(null, null, uri.ToString(), ScalarStyle.Any, true, false));
